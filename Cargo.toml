@@ -1,0 +1,65 @@
+[workspace]
+resolver = "2"
+members = [
+    "delphos/cognition/core",
+    "delphos/cognition/kernel",
+    "delphos/cognition/event",
+    "delphos/cognition/contracts",
+    "delphos/domains/thalassa/runtime",
+    "delphos/domains/thalassa/orchestrator",
+    "delphos/domains/arche/capsule",
+    "delphos/domains/arche/store",
+    "delphos/domains/styx/provider",
+    "delphos/domains/styx/tools",
+    "delphos/domains/katoptron/crypto",
+    "delphos/domains/katoptron/verifier",
+    "delphos/domains/anamnesis/policy",
+    "delphos/domains/mnemos/memory",
+    "delphos/domains/mnemos/replay",
+    "delphos/threshold/cli",
+    "delphos/reflection/inspector",
+    "delphos/calibration/testing",
+]
+
+[workspace.package]
+version    = "0.1.0"
+edition    = "2021"
+license    = "MIT"
+authors    = ["BKG Contributors"]
+repository = "https://github.com/soniaschuh88-ship-it/bkg"
+
+[workspace.dependencies]
+serde          = { version = "1", features = ["derive"] }
+serde_json     = "1"
+uuid           = { version = "1", features = ["v4", "serde"] }
+hex            = "0.4"
+blake3         = "1"
+ed25519-dalek  = { version = "2", features = ["serde"] }
+rand           = "0.8"
+getrandom      = { version = "0.2", features = ["std"] }
+thiserror      = "1"
+anyhow         = "1"
+tokio          = { version = "1", features = ["full"] }
+tokio-stream   = "0.1"
+petgraph       = "0.6"
+tracing        = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+clap           = { version = "4", features = ["derive", "env"] }
+chrono         = { version = "0.4", features = ["serde"] }
+sled           = "0.34"
+bkg-core         = { path = "delphos/cognition/core" }
+bkg-crypto       = { path = "delphos/domains/katoptron/crypto" }
+bkg-event        = { path = "delphos/cognition/event" }
+bkg-contracts    = { path = "delphos/cognition/contracts" }
+bkg-kernel       = { path = "delphos/cognition/kernel" }
+bkg-swd          = { path = "delphos/domains/styx/provider" }
+bkg-capsule      = { path = "delphos/domains/arche/capsule" }
+bkg-store        = { path = "delphos/domains/arche/store" }
+bkg-memory       = { path = "delphos/domains/mnemos/memory" }
+bkg-replay       = { path = "delphos/domains/mnemos/replay" }
+bkg-verifier     = { path = "delphos/domains/katoptron/verifier" }
+bkg-policy       = { path = "delphos/domains/anamnesis/policy" }
+bkg-runtime      = { path = "delphos/domains/thalassa/runtime" }
+bkg-orchestrator = { path = "delphos/domains/thalassa/orchestrator" }
+bkg-tools        = { path = "delphos/domains/styx/tools" }
+bkg-inspector    = { path = "delphos/reflection/inspector" }

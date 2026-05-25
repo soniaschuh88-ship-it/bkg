@@ -1,0 +1,18 @@
+[package]
+name        = "bkg-orchestrator"
+description = "BKG orchestrator"
+version.workspace   = true
+edition.workspace   = true
+license.workspace   = true
+
+[dependencies]
+bkg-core.workspace = true
+bkg-event.workspace = true
+bkg-runtime.workspace = true
+petgraph.workspace = true
+tokio.workspace = true
+tokio-stream.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono.workspace = true

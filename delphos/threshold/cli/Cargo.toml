@@ -1,0 +1,36 @@
+[package]
+name        = "bkg-cli"
+description = "BKG CLI: init, run, verify, replay, status, isolate"
+version.workspace   = true
+edition.workspace   = true
+license.workspace   = true
+
+[[bin]]
+name = "bkg"
+path = "src/main.rs"
+
+[dependencies]
+bkg-core.workspace         = true
+bkg-crypto.workspace       = true
+bkg-contracts.workspace    = true
+bkg-kernel.workspace       = true
+bkg-event.workspace        = true
+bkg-swd.workspace          = true
+bkg-capsule.workspace      = true
+bkg-store.workspace        = true
+bkg-verifier.workspace     = true
+bkg-replay.workspace       = true
+bkg-runtime.workspace      = true
+bkg-orchestrator.workspace = true
+bkg-memory.workspace       = true
+bkg-policy.workspace       = true
+bkg-tools.workspace        = true
+clap.workspace             = true
+serde.workspace            = true
+serde_json.workspace       = true
+thiserror.workspace        = true
+tokio.workspace            = true
+tracing.workspace          = true
+tracing-subscriber.workspace = true
+anyhow.workspace           = true
+chrono.workspace           = true

@@ -1,0 +1,15 @@
+[package]
+name        = "bkg-replay"
+description = "BKG deterministic replay"
+version.workspace   = true
+edition.workspace   = true
+license.workspace   = true
+
+[dependencies]
+bkg-core.workspace = true
+bkg-crypto.workspace = true
+bkg-event.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+chrono.workspace = true

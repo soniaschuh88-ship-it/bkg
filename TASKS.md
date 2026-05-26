@@ -24,12 +24,12 @@
 
 ### Batch 1 — Core Application
 
-- [ ] `bkg-project` `cognition/project` — project registry, settings, 5 model lanes
-- [ ] `bkg-workflow` `cognition/workflow` — Plan→Review→Execute, verdicts, wave execution
+- [x] `bkg-project` `cognition/project` — project registry, settings, 5 model lanes
+- [x] `bkg-workflow` `cognition/workflow` — Plan→Review→Execute, verdicts, wave execution
 - [ ] `bkg-query` `cognition/query` — BQL engine: `SELECT tasks WHERE status = "blocked" ORDER BY entropy`
 - [ ] `bkg-task` `domains/thalassa/task` — task capsules `.bkg/tasks/{id}/`, lifecycle, DAG deps
-- [ ] `bkg-mission` `domains/thalassa/mission` — Mission→Milestone→Slice→Feature→Task, autopilot
-- [ ] `bkg-scheduler` `domains/thalassa/scheduler` — deterministic DAG, priority queue, overlap gating
+- [x] `bkg-mission` `domains/thalassa/mission` — Mission→Milestone→Slice→Feature→Task, autopilot
+- [x] `bkg-scheduler` `domains/thalassa/scheduler` — deterministic DAG, priority queue, overlap gating
 - [ ] `bkg-lanes` `domains/styx/lanes` — Realm Bus IPC, priority lanes, backpressure
 
 ### Batch 1.5 — ECS Foundation
@@ -142,7 +142,7 @@
 
 ## KNOWN ISSUES
 
-- [ ] `bkg-workflow` is an empty stub — needs full implementation in Batch 0
+- [x] `bkg-workflow` is an empty stub — needs full implementation in Batch 0
 - [ ] `bkg-acp` `AgentBridge` not wired to real agent processes
 - [ ] `bkg-session` in-memory only — add `bkg-store` persistence
 - [ ] `SystemTime::now()` in `session.rs`, `tracker.rs` — replace with `bkg-clock`

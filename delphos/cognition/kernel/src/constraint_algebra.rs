@@ -396,9 +396,9 @@ pub fn canonical_constraint_rules() -> RuleSet {
 
     // Helper macros (closures to avoid repetition)
     let phase_eq    = |p| ConstraintExpr::PhaseEq(p);
-    let phase_in    = |ps: &[KernelPhase]| ConstraintExpr::PhaseIn(ps.to_vec());
+    let _phase_in    = |ps: &[KernelPhase]| ConstraintExpr::PhaseIn(ps.to_vec());
     let input_eq    = |s| ConstraintExpr::InputEq(s);
-    let input_in    = |ss: &[KernelInputKind]| ConstraintExpr::InputIn(ss.to_vec());
+    let _input_in    = |ss: &[KernelInputKind]| ConstraintExpr::InputIn(ss.to_vec());
     let and         = |a: ConstraintExpr, b: ConstraintExpr| a.and(b);
     let not         = |e: ConstraintExpr| e.negate();
 
@@ -437,33 +437,50 @@ pub fn canonical_constraint_rules() -> RuleSet {
             ConstraintTarget::Phase(P::Faulted),
         ),
 
-        // ── R4: Pipeline advance (all 11 steps in one rule) ───────────────
-        // Guard: phase is a pipeline-advance phase AND input is its success input
+        // ── R4: Pipeline advance — union of exact (phase, input) pairs ────────
+        // Cross-products over-generalize: (ValidatingAbi, EventArrived) is NOT valid.
+        // Only specific pairs advance the pipeline. Express as a disjunction.
         ConstraintRule::new(
             "pipeline-advance",
-            phase_in(&[
-                P::Idle, P::ValidatingAbi, P::ValidatingSchema, P::ValidatingClock,
-                P::ValidatingCapability, P::ValidatingCausal, P::Deciding,
-                P::Applying, P::Stamping, P::Emitting,
-            ]).and(input_in(&[
-                I::EventArrived, I::AbiValid, I::SchemaValid, I::ClockValid,
-                I::CapabilityGranted, I::CausalValid, I::DecisionAllow,
-                I::DecisionTransform, I::TransitionApplied, I::ProjectionStamped,
-                I::EmitComplete,
-            ])),
+            // Each pair: phase_eq(p) ∧ input_eq(σ) where (p,σ) is a valid pipeline step
+            {
+                let steps: &[(KernelPhase, KernelInputKind)] = &[
+                    (P::Idle,                 I::EventArrived),
+                    (P::ValidatingAbi,        I::AbiValid),
+                    (P::ValidatingSchema,     I::SchemaValid),
+                    (P::ValidatingClock,      I::ClockValid),
+                    (P::ValidatingCapability, I::CapabilityGranted),
+                    (P::ValidatingCausal,     I::CausalValid),
+                    (P::Deciding,             I::DecisionAllow),
+                    (P::Deciding,             I::DecisionTransform),
+                    (P::Applying,             I::TransitionApplied),
+                    (P::Stamping,             I::ProjectionStamped),
+                    (P::Emitting,             I::EmitComplete),
+                ];
+                steps.iter().fold(ConstraintExpr::False, |acc, &(ph, inp)| {
+                    acc.or(phase_eq(ph).and(input_eq(inp)))
+                })
+            },
             ConstraintTarget::NextInPipeline,
         ),
 
-        // ── R5: Validation rejection → Idle ──────────────────────────────
+        // ── R5: Validation rejection — union of exact (phase, failure) pairs ─
+        // Each validation phase has exactly ONE failure input. Cross-product wrong.
         ConstraintRule::new(
             "validation-rejection",
-            phase_in(&[
-                P::ValidatingAbi, P::ValidatingSchema, P::ValidatingClock,
-                P::ValidatingCapability, P::ValidatingCausal, P::Deciding,
-            ]).and(input_in(&[
-                I::AbiFailed, I::SchemaFailed, I::ClockFailed,
-                I::CapabilityDenied, I::CausalFailed, I::DecisionReject,
-            ])),
+            {
+                let pairs: &[(KernelPhase, KernelInputKind)] = &[
+                    (P::ValidatingAbi,        I::AbiFailed),
+                    (P::ValidatingSchema,     I::SchemaFailed),
+                    (P::ValidatingClock,      I::ClockFailed),
+                    (P::ValidatingCapability, I::CapabilityDenied),
+                    (P::ValidatingCausal,     I::CausalFailed),
+                    (P::Deciding,             I::DecisionReject),
+                ];
+                pairs.iter().fold(ConstraintExpr::False, |acc, &(ph, inp)| {
+                    acc.or(phase_eq(ph).and(input_eq(inp)))
+                })
+            },
             ConstraintTarget::Phase(P::Idle),
         ),
 

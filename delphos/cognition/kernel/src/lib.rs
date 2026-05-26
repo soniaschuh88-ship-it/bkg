@@ -1,5 +1,7 @@
 pub mod arbitrator; pub mod pipeline; pub mod constraint_algebra;
 pub mod proof_certificate;
+pub mod trace_synthesizer;
+pub mod specification_drift;
 pub mod integration;
 pub mod realm;
 pub mod effect_contract;

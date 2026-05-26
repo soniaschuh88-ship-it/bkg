@@ -17,6 +17,9 @@ members = [
     "delphos/domains/mnemos/memory",
     "delphos/domains/mnemos/replay",
     "delphos/domains/thalassa/providers",
+    "delphos/domains/thalassa/agents",
+    "delphos/domains/thalassa/session",
+    "delphos/cognition/protocol",
     "delphos/domains/katoptron/telemetry",
     "delphos/reflection/ui/atlantean",
     "delphos/threshold/cli",
@@ -66,6 +69,9 @@ bkg-verifier     = { path = "delphos/domains/katoptron/verifier" }
 bkg-policy       = { path = "delphos/domains/anamnesis/policy" }
 bkg-runtime      = { path = "delphos/domains/thalassa/runtime" }
 bkg-orchestrator = { path = "delphos/domains/thalassa/orchestrator" }
+bkg-acp        = { path = "delphos/cognition/protocol" }
+bkg-session    = { path = "delphos/domains/thalassa/session" }
+bkg-agents    = { path = "delphos/domains/thalassa/agents" }
 bkg-providers    = { path = "delphos/domains/thalassa/providers" }
 bkg-telemetry    = { path = "delphos/domains/katoptron/telemetry" }
 bkg-atlantean    = { path = "delphos/reflection/ui/atlantean" }

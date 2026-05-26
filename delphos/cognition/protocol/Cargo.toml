@@ -1,0 +1,14 @@
+[package]
+name="bkg-acp"
+description="BKG ACP protocol adapter"
+version.workspace=true
+edition.workspace=true
+license.workspace=true
+[dependencies]
+bkg-core.workspace=true
+serde.workspace=true
+serde_json.workspace=true
+thiserror.workspace=true
+chrono.workspace=true
+uuid.workspace=true
+tokio.workspace=true

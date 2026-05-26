@@ -7,6 +7,7 @@ pub mod algebra_stability;
 pub mod semantic_weight;
 pub mod rule_simplifier;
 pub mod counterfactual;
+pub mod counterfactual_competition;
 pub mod integration;
 pub mod realm;
 pub mod effect_contract;
@@ -28,3 +29,5 @@ pub use semantic_weight::{SemanticWeightLayer, SemanticWeightReport, RuleSemanti
 pub use rule_simplifier::{RuleSimplifier, SimplificationResult, SimplificationOp, verify_canonical_is_minimal};
 
 pub use counterfactual::{CounterfactualAnalyzer, CounterfactualAnalysis, CounterfactualReport, CounterfactualWitness, StateReachabilityGraph, SemanticFixationGuard, SimplificationVerdict, PreserveReason};
+
+pub use counterfactual_competition::{CounterfactualCompetitionLayer, CompetitionReport, CompetitionVerdict, DomainInterference, OpportunityCost, UniqueCriticalCoverage};

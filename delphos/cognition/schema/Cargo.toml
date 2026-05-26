@@ -1,11 +1,12 @@
 [package]
 name="bkg-schema"
-description="BKG schema — Single source of truth."
+description="BKG EventSchemaRegistry — replay-safe event schema management. Single source of truth."
 version.workspace=true
 edition.workspace=true
 license.workspace=true
 [dependencies]
 bkg-core.workspace=true
+bkg-abi={ path = "../abi" }
 serde.workspace=true
 serde_json.workspace=true
 thiserror.workspace=true

@@ -1,0 +1,25 @@
+[package]
+name="bkg-atlantean"
+description="BKG dashboard — cyberpunk/Atlantis UI, Private/Cloud mode, WebLLM, Ollama tunnel"
+version.workspace=true
+edition.workspace=true
+license.workspace=true
+[[bin]]
+name="bkg-atlantean"
+path="src/main.rs"
+[dependencies]
+bkg-core.workspace=true
+bkg-providers.workspace=true
+bkg-telemetry.workspace=true
+bkg-verifier.workspace=true
+axum={version="0.7",features=["ws","macros"]}
+tower-http={version="0.5",features=["cors","trace"]}
+tokio.workspace=true
+serde.workspace=true
+serde_json.workspace=true
+anyhow.workspace=true
+chrono.workspace=true
+tracing.workspace=true
+tracing-subscriber={version="0.3",features=["env-filter"]}
+uuid.workspace=true
+reqwest.workspace=true

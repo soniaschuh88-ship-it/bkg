@@ -1,0 +1,17 @@
+[package]
+name = "bkg-enforce"
+description = "BKG hard enforcement: sealed traits, invariant guards, workspace lints. No bypass possible. Single source of truth."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bkg-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+# Proc-macro guard (optional — compile-time enforcement)
+# bkg-enforce-macros = { path = "../enforce-macros", optional = true }
+# [features]
+# macros = ["bkg-enforce-macros"]

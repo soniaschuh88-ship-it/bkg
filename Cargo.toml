@@ -2,6 +2,16 @@
 resolver = "2"
 members = [
     "delphos/cognition/core",
+    "delphos/cognition/enforce",
+    "delphos/domains/anamnesis/operator",
+    "delphos/domains/katoptron/world",
+    "delphos/domains/thalassa/simulation",
+    "delphos/domains/speculum/lineage",
+    "delphos/domains/speculum/gc",
+    "delphos/domains/speculum/recovery",
+    "delphos/domains/speculum/diff",
+    "delphos/domains/katoptron/render",
+    "delphos/domains/katoptron/compiler",
     "delphos/domains/katoptron/entropy",
     "delphos/domains/katoptron/physics",
     "delphos/domains/speculum/migration",
@@ -109,6 +119,16 @@ bkg-snapshot    = { path = "delphos/domains/speculum/snapshot" }
 bkg-migration    = { path = "delphos/domains/speculum/migration" }
 bkg-physics    = { path = "delphos/domains/katoptron/physics" }
 bkg-entropy    = { path = "delphos/domains/katoptron/entropy" }
+bkg-compiler    = { path = "delphos/domains/katoptron/compiler" }
+bkg-render    = { path = "delphos/domains/katoptron/render" }
+bkg-diff    = { path = "delphos/domains/speculum/diff" }
+bkg-recovery    = { path = "delphos/domains/speculum/recovery" }
+bkg-gc    = { path = "delphos/domains/speculum/gc" }
+bkg-lineage    = { path = "delphos/domains/speculum/lineage" }
+bkg-simulation    = { path = "delphos/domains/thalassa/simulation" }
+bkg-world    = { path = "delphos/domains/katoptron/world" }
+bkg-operator    = { path = "delphos/domains/anamnesis/operator" }
+bkg-enforce = { path = "delphos/cognition/enforce" }
 bkg-core         = { path = "delphos/cognition/core" }
 bkg-crypto       = { path = "delphos/domains/katoptron/crypto" }
 bkg-event        = { path = "delphos/cognition/event" }

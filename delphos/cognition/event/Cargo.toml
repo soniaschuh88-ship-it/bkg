@@ -17,3 +17,6 @@ hex.workspace = true
 
 [dev-dependencies]
 uuid = { version = "1", features = ["v4"] }
+
+bkg-clock={ path = "../clock" }
+bkg-schema={ path = "../schema" }

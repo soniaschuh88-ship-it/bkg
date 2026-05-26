@@ -10,12 +10,12 @@
 ### Batch 0 — Architecture Foundation
 *Must complete before any application crates. These are the non-negotiable substrate.*
 
-- [ ] **bkg-state** `cognition/state` — `Reducer<E>` trait, immutable `RealmState`, projection layer, reconciliation
-- [ ] **bkg-abi** `cognition/abi` — `AbiEnvelope<T>`, version negotiation, typed serialization contracts
-- [ ] **bkg-clock** `cognition/clock` — `SequencedInstant`, `VectorClock`, no `SystemTime::now()`
-- [ ] **bkg-schema** `cognition/schema` — `EventSchemaRegistry`, migration strategies, schema versioning
-- [ ] **DomainEvent\<T\>** extend `bkg-event` — typed events, `schema_id`, `causal_parent`
-- [ ] **kernel/arbitrator** extend `bkg-kernel` — causality judge, replay paradox prevention
+- [x] **bkg-state** `cognition/state` — `Reducer<E>` trait, immutable `RealmState`, projection layer, reconciliation
+- [x] **bkg-abi** `cognition/abi` — `AbiEnvelope<T>`, version negotiation, typed serialization contracts
+- [x] **bkg-clock** `cognition/clock` — `SequencedInstant`, `VectorClock`, no `SystemTime::now()`
+- [x] **bkg-schema** `cognition/schema` — `EventSchemaRegistry`, migration strategies, schema versioning
+- [x] **DomainEvent<T>** extend `bkg-event` — typed events, `schema_id`, `causal_parent`
+- [x] **kernel/arbitrator** extend `bkg-kernel` — causality judge, replay paradox prevention
 - [ ] **workflow ExecutionGraph** in `bkg-workflow` impl — loops, retries, parallel waves
 
 ---

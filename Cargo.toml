@@ -2,6 +2,13 @@
 resolver = "2"
 members = [
     "delphos/cognition/core",
+    "delphos/domains/katoptron/plugins",
+    "delphos/domains/thalassa/github",
+    "delphos/domains/thalassa/chat",
+    "delphos/domains/katoptron/eval",
+    "delphos/domains/speculum/capabilities",
+    "delphos/domains/katoptron/approval",
+    "delphos/domains/katoptron/secrets",
     "delphos/domains/speculum/identity",
     "delphos/domains/katoptron/projection",
     "delphos/domains/katoptron/ecs",
@@ -83,6 +90,13 @@ bkg-lanes    = { path = "delphos/domains/styx/lanes" }
 bkg-ecs    = { path = "delphos/domains/katoptron/ecs" }
 bkg-projection    = { path = "delphos/domains/katoptron/projection" }
 bkg-identity    = { path = "delphos/domains/speculum/identity" }
+bkg-secrets    = { path = "delphos/domains/katoptron/secrets" }
+bkg-approval    = { path = "delphos/domains/katoptron/approval" }
+bkg-capabilities    = { path = "delphos/domains/speculum/capabilities" }
+bkg-eval    = { path = "delphos/domains/katoptron/eval" }
+bkg-chat    = { path = "delphos/domains/thalassa/chat" }
+bkg-github    = { path = "delphos/domains/thalassa/github" }
+bkg-plugins    = { path = "delphos/domains/katoptron/plugins" }
 bkg-core         = { path = "delphos/cognition/core" }
 bkg-crypto       = { path = "delphos/domains/katoptron/crypto" }
 bkg-event        = { path = "delphos/cognition/event" }

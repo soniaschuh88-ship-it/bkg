@@ -10,7 +10,7 @@
 
 pub mod invariants;
 pub mod mutation;
-pub mod projection;
+pub mod projection; pub mod projection_view;
 pub mod realm_state;
 pub mod reconciliation;
 pub mod reducer;
@@ -22,3 +22,5 @@ pub use realm_state::RealmState;
 pub use reducer::{Reducer, ReducerId};
 pub use snapshot::StateSnapshot;
 pub use transition::{StateTransition, TransitionError};
+
+pub use projection_view::{AgentStatusProjection, KanbanProjection, ProjectionView, TaskListProjection, TaskSummary};

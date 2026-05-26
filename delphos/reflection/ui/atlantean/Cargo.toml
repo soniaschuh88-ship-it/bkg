@@ -25,3 +25,9 @@ uuid.workspace=true
 reqwest.workspace=true
 
 rand = "0.8"
+
+bkg-agents={ path = "../../domains/thalassa/agents" }
+bkg-session={ path = "../../domains/thalassa/session" }
+bkg-acp={ path = "../../../cognition/protocol" }
+tokio-stream="0.1"
+futures-util="0.3"

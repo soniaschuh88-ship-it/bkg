@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
+use bkg_session::SessionManager;
 use bkg_providers::{ProviderRegistry, ProviderToggleState, ToggleMode};
 use bkg_telemetry::{ModelTracker, QuotaMonitor};
 
@@ -31,6 +32,7 @@ pub struct AppState {
     pub quota: QuotaMonitor,
     pub globals: GlobalProviderKeys,
     /// Self-registration rate-limit: ip → (count, reset_at)
+    pub session_manager: SessionManager,
     pub reg_rate: HashMap<String, (u32, chrono::DateTime<chrono::Utc>)>,
 }
 
@@ -53,7 +55,7 @@ impl AppState {
             if *mode == ToggleMode::FreeOnly { registry.toggle_provider(id); } // reset if needed
         }
 
-        Ok(Self { data_dir, mode: AppMode::default(), registry, toggle, tracker, quota, globals, reg_rate: HashMap::new() })
+        Ok(Self { data_dir, mode: AppMode::default(), registry, toggle, tracker, quota, globals, session_manager: SessionManager::new(), reg_rate: HashMap::new() })
     }
 
     pub fn save_globals(&self) -> anyhow::Result<()> {

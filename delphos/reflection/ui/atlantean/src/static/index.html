@@ -61,6 +61,15 @@
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
       <span>My Keys</span>
     </a>
+    <div class="nav-section">Agents</div>
+    <a class="nav-item" onclick="navigateTo('agents')" id="nav-agents">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      <span>Agents</span>
+    </a>
+    <a class="nav-item" onclick="navigateTo('inspector')" id="nav-inspector">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+      <span>Inspector</span>
+    </a>
     <div class="nav-section">System</div>
     <a class="nav-item" onclick="navigateTo('dashboard')" id="nav-dashboard">
       <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
@@ -150,6 +159,65 @@
       </div>
     </div>
 
+
+    <!-- AGENTS PAGE -->
+    <div id="page-agents" class="page hidden">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+          Agent Runtime
+        </div>
+        <p class="text-muted mb-16" style="font-size:0.82rem">
+          All agents rebranded into BKG DELPHOS. Credentials use the same fallback chain as providers:
+          your key → admin global → env var → agent config file.
+        </p>
+        <div id="agents-grid" class="grid-2">Loading…</div>
+      </div>
+    </div>
+
+    <!-- INSPECTOR PAGE -->
+    <div id="page-inspector" class="page hidden">
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;height:calc(100vh - 140px)">
+        <!-- Session list -->
+        <div class="card" style="overflow-y:auto">
+          <div class="card-title">Sessions
+            <button class="btn btn-ghost" style="margin-left:auto;padding:4px 10px;font-size:0.6rem" onclick="loadSessions()">↻</button>
+          </div>
+          <div id="session-list-panel" style="display:flex;flex-direction:column;gap:6px">Loading…</div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+            <div class="form-group">
+              <label class="form-label">New Session</label>
+              <select class="model-selector" id="new-sess-agent" style="width:100%;margin-bottom:6px">
+                <option value="mock">Mock (always available)</option>
+                <option value="claude">Claude Code</option>
+                <option value="codex">Codex</option>
+                <option value="opencode">OpenCode</option>
+                <option value="amp">Amp</option>
+              </select>
+              <select class="model-selector" id="new-sess-mode" style="width:100%;margin-bottom:6px">
+                <option value="default">Default</option>
+                <option value="bypass">Bypass</option>
+                <option value="plan_mode">Plan Mode</option>
+                <option value="bkg_supervised">BKG Supervised</option>
+              </select>
+              <button class="btn btn-primary" style="width:100%" onclick="createInspectorSession()">Create Session</button>
+            </div>
+          </div>
+        </div>
+        <!-- Event viewer -->
+        <div class="card" style="display:flex;flex-direction:column">
+          <div class="card-title" id="inspector-sess-title">Select a session</div>
+          <div id="inspector-events" style="flex:1;overflow-y:auto;font-size:0.78rem;padding:4px">
+            <div class="text-muted" style="text-align:center;padding-top:40px">Select a session from the left to inspect events</div>
+          </div>
+          <!-- Send message in inspector -->
+          <div style="padding:10px;border-top:1px solid var(--border);display:flex;gap:8px">
+            <input class="input-field" id="inspector-input" placeholder="Send a message to the active session…" onkeydown="if(event.key==='Enter')sendInspectorMsg()">
+            <button class="btn btn-primary" onclick="sendInspectorMsg()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- DASHBOARD PAGE -->
     <div id="page-dashboard" class="page hidden">
       <div class="grid-stats" style="margin-bottom:20px" id="stats-row">Loading stats…</div>
@@ -501,6 +569,8 @@ function navigateTo(page) {
   const navEl = document.getElementById('nav-' + page);
   if (navEl) navEl.classList.add('active');
   if (page==='dashboard') loadDashboardStats();
+  if (page==='agents') loadAgents();
+  if (page==='inspector') loadSessions();
   if (page==='providers') { renderProviderGrid(); }
 }
 
@@ -553,6 +623,133 @@ function showToast(msg, color='teal') {
   const t=document.createElement('div');
   t.style.cssText=`position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.1em;font-weight:700;z-index:9999;background:rgba(10,15,30,0.95);border:1px solid var(--${color});color:var(--${color});box-shadow:var(--glow-${color});animation:msgIn 0.2s ease;`;
   t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+
+// ══ Agents ═══════════════════════════════════════════════════════════════════
+async function loadAgents() {
+  try {
+    const d = await apiFetch('/agents/list');
+    const el = document.getElementById('agents-grid');
+    if (!el) return;
+    el.innerHTML = (d.agents || []).map(a => `
+      <div class="card" style="border-left:3px solid ${a.ready?'var(--teal)':a.installed?'var(--gold)':'var(--text-muted)'}">
+        <div class="flex items-center justify-between mb-8">
+          <span class="font-orb" style="font-size:0.8rem;color:var(--text)">${a.display_name}</span>
+          <span class="tier-badge ${a.ready?'free':a.installed?'freemium':'paid'}">${a.ready?'READY':a.installed?'NO KEY':'NOT INSTALLED'}</span>
+        </div>
+        <div class="text-muted" style="font-size:0.72rem;margin-bottom:8px">
+          Provider: <span class="text-teal">${a.default_provider}</span> ·
+          Source: <span class="text-dim">${a.credential_source||'not configured'}</span>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+          ${(a.supported_modes||[]).map(m=>`<span class="tier-badge freemium" style="font-size:0.58rem">${m}</span>`).join('')}
+          ${a.supports_streaming?'<span class="tier-badge free" style="font-size:0.58rem">stream</span>':''}
+          ${a.supports_permissions?'<span class="tier-badge paid" style="font-size:0.58rem">permissions</span>':''}
+        </div>
+        ${!a.credentials_available ? `<div class="form-group">
+          <input class="input-field" type="password" id="agent-key-${a.id}" placeholder="API key for ${a.display_name}…" style="font-size:0.78rem">
+          <button class="btn btn-ghost" style="margin-top:4px;width:100%" onclick="setAgentKey('${a.id}')">Set Key</button>
+        </div>` : `<div style="color:var(--teal);font-size:0.72rem">✓ Credentials configured</div>`}
+      </div>`).join('');
+  } catch(e) { document.getElementById('agents-grid').textContent = 'Error loading agents: ' + e.message; }
+}
+
+async function setAgentKey(agentId) {
+  const inp = document.getElementById('agent-key-' + agentId);
+  if (!inp || !inp.value) return;
+  try {
+    await apiFetch('/agents/' + agentId + '/credentials', 'POST', {api_key: inp.value}, myBkgKey);
+    showToast('Key saved for ' + agentId, 'teal');
+    loadAgents();
+    loadModels();
+  } catch(e) { showToast('Error: ' + e.message, 'red'); }
+}
+
+// ══ Inspector ═════════════════════════════════════════════════════════════════
+let activeSessionId = null;
+let inspectorEventSource = null;
+
+async function loadSessions() {
+  try {
+    const d = await apiFetch('/sessions');
+    const el = document.getElementById('session-list-panel');
+    if (!el) return;
+    if (!d.sessions || d.sessions.length === 0) {
+      el.innerHTML = '<div class="text-muted" style="font-size:0.78rem;padding:8px">No sessions yet. Create one below.</div>';
+      return;
+    }
+    el.innerHTML = d.sessions.map(s => `
+      <div class="card" style="padding:10px;cursor:pointer;border-left:3px solid ${s.agent_id==='mock'?'var(--violet)':'var(--teal)'};${activeSessionId===s.id?'border-color:var(--gold)':''}"
+           onclick="openInspectorSession('${s.id}')">
+        <div class="font-orb" style="font-size:0.68rem;color:var(--teal)">${s.id.slice(0,12)}…</div>
+        <div style="font-size:0.72rem;color:var(--text-dim);margin-top:2px">${s.agent_id} · ${s.mode}</div>
+        <div style="font-size:0.65rem;color:var(--text-muted)">${new Date(s.created_at).toLocaleTimeString()}</div>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function createInspectorSession() {
+  const agentId = document.getElementById('new-sess-agent').value;
+  const mode = document.getElementById('new-sess-mode').value;
+  try {
+    const d = await apiFetch('/sessions', 'POST', {agent_id: agentId, mode, user_bkg_key: myBkgKey});
+    showToast('Session created: ' + d.session_id.slice(0,8), 'teal');
+    await loadSessions();
+    openInspectorSession(d.session_id);
+  } catch(e) { showToast('Error: ' + e.message, 'red'); }
+}
+
+function openInspectorSession(sessionId) {
+  activeSessionId = sessionId;
+  const title = document.getElementById('inspector-sess-title');
+  if (title) title.textContent = 'Session: ' + sessionId.slice(0,16) + '… (live)';
+  const evDiv = document.getElementById('inspector-events');
+  if (evDiv) evDiv.innerHTML = '';
+
+  // Close old stream
+  if (inspectorEventSource) { inspectorEventSource.close(); inspectorEventSource = null; }
+
+  // Open SSE stream
+  const sse = new EventSource('/sessions/' + sessionId + '/stream?offset=0');
+  inspectorEventSource = sse;
+
+  sse.addEventListener('message', e => appendInspectorEvent(JSON.parse(e.data)));
+  sse.addEventListener('started', e => appendInspectorEvent(JSON.parse(e.data)));
+  sse.addEventListener('delta', e => appendInspectorEvent(JSON.parse(e.data)));
+  sse.addEventListener('finished', e => { appendInspectorEvent(JSON.parse(e.data)); sse.close(); });
+  sse.addEventListener('error', e => { appendInspectorEvent(JSON.parse(e.data || '{}')); });
+
+  // Reload session list to show active
+  loadSessions();
+}
+
+function appendInspectorEvent(ev) {
+  const el = document.getElementById('inspector-events');
+  if (!el) return;
+  const typeColors = {started:'var(--teal)',message:'var(--text)',delta:'var(--text-dim)',finished:'var(--gold)',error:'var(--red)',permission_asked:'var(--violet)',unknown:'var(--text-muted)'};
+  const color = typeColors[ev.data?.type] || 'var(--text-dim)';
+  const row = document.createElement('div');
+  row.style.cssText = `padding:6px 8px;margin-bottom:4px;background:var(--surface);border-radius:6px;border-left:2px solid ${color};animation:msgIn 0.15s ease`;
+  const evType = ev.data?.type || 'unknown';
+  const idStr = ev.id !== undefined ? `<span style="color:var(--text-muted);margin-right:6px">#${ev.id}</span>` : '';
+  const content = evType === 'message' ? (ev.data?.format === 'parsed' ? ev.data?.parts?.map(p=>p.text||'').join('') : JSON.stringify(ev.data)) :
+                  evType === 'delta' ? ev.data?.text || '' :
+                  JSON.stringify(ev.data || ev);
+  row.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span class="font-orb" style="font-size:0.6rem;color:${color}">${evType.toUpperCase()}</span>${idStr}<span style="font-size:0.6rem;color:var(--text-muted);margin-left:auto">${new Date().toLocaleTimeString()}</span></div><div style="font-size:0.78rem;color:var(--text);white-space:pre-wrap;word-break:break-word">${escHtml(String(content)).slice(0,400)}</div>`;
+  el.appendChild(row);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function sendInspectorMsg() {
+  if (!activeSessionId) { showToast('Select a session first', 'red'); return; }
+  const inp = document.getElementById('inspector-input');
+  const text = inp?.value?.trim();
+  if (!text) return;
+  inp.value = '';
+  try {
+    await apiFetch('/sessions/' + activeSessionId + '/send', 'POST', {text});
+  } catch(e) { showToast('Send failed: ' + e.message, 'red'); }
 }
 
 // ══ Start ═════════════════════════════════════════════════════════════════════

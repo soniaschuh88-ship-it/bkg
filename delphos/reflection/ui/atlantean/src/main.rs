@@ -60,6 +60,15 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/stats",     get(routes::stats::stats))
         .route("/api/telemetry", get(routes::stats::telemetry))
         // Ollama tunnel — proxies to localhost:11434
+        // Agents
+        .route("/agents/list",              get(routes::agents::list_agents))
+        .route("/agents/{id}/status",       get(routes::agents::agent_status))
+        .route("/agents/{id}/credentials",  post(routes::agents::set_agent_credentials))
+        // Sessions (Inspector)
+        .route("/sessions",                 get(routes::sessions::list_sessions).post(routes::sessions::create_session))
+        .route("/sessions/{id}",            get(routes::sessions::get_session).delete(routes::sessions::destroy_session))
+        .route("/sessions/{id}/send",       post(routes::sessions::send_message))
+        .route("/sessions/{id}/stream",     get(routes::sessions::stream_session))
         .route("/tunnel/ollama/{*path}", get(routes::tunnel::ollama_tunnel).post(routes::tunnel::ollama_tunnel))
         .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any).allow_headers(Any))
         .with_state(state);

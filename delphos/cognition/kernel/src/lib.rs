@@ -8,6 +8,7 @@ pub mod semantic_weight;
 pub mod rule_simplifier;
 pub mod counterfactual;
 pub mod counterfactual_competition;
+pub mod semantic_growth;
 pub mod integration;
 pub mod realm;
 pub mod effect_contract;
@@ -31,3 +32,5 @@ pub use rule_simplifier::{RuleSimplifier, SimplificationResult, SimplificationOp
 pub use counterfactual::{CounterfactualAnalyzer, CounterfactualAnalysis, CounterfactualReport, CounterfactualWitness, StateReachabilityGraph, SemanticFixationGuard, SimplificationVerdict, PreserveReason};
 
 pub use counterfactual_competition::{CounterfactualCompetitionLayer, CompetitionReport, CompetitionVerdict, DomainInterference, OpportunityCost, UniqueCriticalCoverage};
+
+pub use semantic_growth::{SemanticGrowthAnalyzer, SemanticHeadroom, SemanticGrowthInvariant, GrowthVector, GrowthInvariantResult, HeadroomHistory, CycleTransitionCheck};

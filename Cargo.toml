@@ -47,6 +47,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 clap           = { version = "4", features = ["derive", "env"] }
 chrono         = { version = "0.4", features = ["serde"] }
 sled           = "0.34"
+reqwest        = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 bkg-core         = { path = "delphos/cognition/core" }
 bkg-crypto       = { path = "delphos/domains/katoptron/crypto" }
 bkg-event        = { path = "delphos/cognition/event" }

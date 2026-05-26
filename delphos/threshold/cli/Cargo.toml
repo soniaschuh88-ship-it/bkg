@@ -1,14 +1,12 @@
 [package]
 name        = "bkg-cli"
-description = "BKG CLI: init, run, verify, replay, status, isolate"
+description = "BKG CLI: init, run, verify, replay, status, isolate, chat, agent"
 version.workspace   = true
 edition.workspace   = true
 license.workspace   = true
-
 [[bin]]
 name = "bkg"
 path = "src/main.rs"
-
 [dependencies]
 bkg-core.workspace         = true
 bkg-crypto.workspace       = true
@@ -25,6 +23,7 @@ bkg-orchestrator.workspace = true
 bkg-memory.workspace       = true
 bkg-policy.workspace       = true
 bkg-tools.workspace        = true
+reqwest.workspace          = true
 clap.workspace             = true
 serde.workspace            = true
 serde_json.workspace       = true

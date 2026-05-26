@@ -6,6 +6,7 @@ pub mod specification_entropy;
 pub mod algebra_stability;
 pub mod semantic_weight;
 pub mod rule_simplifier;
+pub mod counterfactual;
 pub mod integration;
 pub mod realm;
 pub mod effect_contract;
@@ -25,3 +26,5 @@ pub use proof_certificate::{CertificateBuilder, ExecutionTrace, ProofCheckResult
 pub use semantic_weight::{SemanticWeightLayer, SemanticWeightReport, RuleSemanticWeight, RuleNecessityProof, NecessityClass, RuleRecommendation};
 
 pub use rule_simplifier::{RuleSimplifier, SimplificationResult, SimplificationOp, verify_canonical_is_minimal};
+
+pub use counterfactual::{CounterfactualAnalyzer, CounterfactualAnalysis, CounterfactualReport, CounterfactualWitness, StateReachabilityGraph, SemanticFixationGuard, SimplificationVerdict, PreserveReason};

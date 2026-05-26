@@ -24,4 +24,4 @@ pub use snapshot::StateSnapshot;
 pub use transition::{StateTransition, TransitionError};
 
 pub use projection_contract::{EventRange, KernelStamp, MaterializerKernel, ProjectionChecksum, ProjectionContract, ProjectionVersion, ProjectionViolation, RebuildLog, RebuildProof};
-pub use projection_view::{AgentStatusProjection, KanbanProjection, ProjectionView, TaskListProjection, TaskSummary};
+pub use projection_view::{ProjectionFactory, AgentStatusProjection, KanbanProjection, ProjectionView, TaskListProjection, TaskSummary};

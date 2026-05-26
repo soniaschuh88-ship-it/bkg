@@ -109,11 +109,10 @@ impl<T: Clone + Serialize + for<'de> Deserialize<'de>> ProjectionView<T> {
 
 /// The only way to create ProjectionView instances.
 /// Lives inside bkg-state — UI code cannot use this directly.
-pub(crate) struct ProjectionFactory;
+pub struct ProjectionFactory;
 
-#[allow(dead_code)]
 impl ProjectionFactory {
-    pub(crate) fn create<T: Clone + Serialize + for<'de> Deserialize<'de>>(
+    pub fn create<T: Clone + Serialize + for<'de> Deserialize<'de>>(
         projection_id: impl Into<String>,
         realm_id: impl Into<String>,
         state_version: u64,

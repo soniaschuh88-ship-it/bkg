@@ -1,4 +1,6 @@
-pub mod arbitrator; pub mod pipeline; pub mod integration;
+pub mod arbitrator; pub mod pipeline; pub mod constraint_algebra;
+pub mod proof_certificate;
+pub mod integration;
 pub mod realm;
 pub mod effect_contract;
 pub mod rule_engine;
@@ -11,3 +13,6 @@ pub use arbitrator::{ArbitrationDecision, ArbitrationError, KernelArbitrator};
 pub use genesis::Genesis;
 pub use router::RealmRouter;
 pub use validator::CausalContractValidator;
+
+pub use constraint_algebra::{ConstraintExpr, ConstraintRule, ConstraintTarget, RuleSet, canonical_constraint_rules};
+pub use proof_certificate::{CertificateBuilder, ExecutionTrace, ProofCheckResult, ProofChecker, TransitionCertificate};

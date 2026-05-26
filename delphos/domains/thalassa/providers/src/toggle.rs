@@ -20,6 +20,7 @@ impl ProviderToggleState {
         path.exists().then(||std::fs::read_to_string(path).ok())
             .flatten().and_then(|s|serde_json::from_str(&s).ok()).unwrap_or_default()
     }
+    pub fn set_global(&mut self, m: ToggleMode) { self.global = m; }
     pub fn save_to_file(&self,path:&std::path::Path)->bkg_core::BkgResult<()> {
         if let Some(p)=path.parent(){std::fs::create_dir_all(p)?;}
         let j=serde_json::to_string_pretty(self).map_err(bkg_core::BkgError::Serialisation)?;

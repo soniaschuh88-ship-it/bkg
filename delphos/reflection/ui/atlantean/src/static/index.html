@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BKG Atlantean</title>
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
+</head>
+<body>
+
+<!-- Onboarding Modal -->
+<div id="onboarding-overlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="step-dots">
+      <div class="step-dot active" id="dot-0"></div>
+      <div class="step-dot" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+    </div>
+    <div id="onboarding-step-0">
+      <div class="modal-title">Welcome to BKG</div>
+      <div class="modal-subtitle">Deterministic Multi-Realm Execution System<br>Your gateway to every free AI model.</div>
+      <div class="key-display-label">Your BKG API Key</div>
+      <div class="key-display" id="onboarding-key">Generating…</div>
+      <p class="text-muted" style="font-size:0.78rem;margin-top:8px;margin-bottom:24px">Save this key — it identifies your session and provider keys. Store it somewhere safe.</p>
+      <button class="btn btn-primary w-full" onclick="onboardingNext()">Continue →</button>
+    </div>
+    <div id="onboarding-step-1" class="hidden">
+      <div class="modal-title">Provider Setup</div>
+      <div class="modal-subtitle">Add your API keys to unlock more models. All keys are stored locally on this server only.</div>
+      <div id="onboarding-providers-list" style="max-height:300px;overflow-y:auto;margin-bottom:20px"></div>
+      <button class="btn btn-primary w-full" onclick="onboardingNext()">Continue →</button>
+      <button class="btn btn-ghost w-full" style="margin-top:8px" onclick="onboardingNext()">Skip for now</button>
+    </div>
+    <div id="onboarding-step-2" class="hidden">
+      <div class="modal-title">You're Ready ✦</div>
+      <div class="modal-subtitle">BKG Atlantean is configured. Start chatting or explore the dashboard.</div>
+      <div class="grid-2" style="margin-bottom:24px">
+        <button class="btn btn-primary" onclick="navigateTo('chat');closeOnboarding()">⬡ Chat</button>
+        <button class="btn btn-ghost" onclick="navigateTo('dashboard');closeOnboarding()">⊞ Dashboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">BKG<br><small>ATLANTEAN SYSTEM</small></div>
+    <div class="nav-section">Chat</div>
+    <a class="nav-item active" onclick="navigateTo('chat')" id="nav-chat">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span>Chat</span>
+    </a>
+    <div class="nav-section">Providers</div>
+    <a class="nav-item" onclick="navigateTo('providers')" id="nav-providers">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      <span>All Providers</span>
+    </a>
+    <a class="nav-item" onclick="navigateTo('my-keys')" id="nav-my-keys">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+      <span>My Keys</span>
+    </a>
+    <div class="nav-section">System</div>
+    <a class="nav-item" onclick="navigateTo('dashboard')" id="nav-dashboard">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a class="nav-item" onclick="navigateTo('admin')" id="nav-admin">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span>Admin</span>
+    </a>
+    <div style="margin-top:auto;padding:16px 20px;border-top:1px solid var(--border)">
+      <div style="font-size:0.68rem;color:var(--text-muted);font-family:'Orbitron',monospace;letter-spacing:0.08em">BKG v0.1.0</div>
+      <div style="font-size:0.62rem;color:var(--text-muted);margin-top:2px">Single source of truth.</div>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">BKG <span>ATLANTEAN</span></div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <!-- Mode Toggle -->
+      <div class="mode-toggle" id="mode-toggle-widget">
+        <button class="mode-btn active-private" id="btn-private" onclick="setMode('private')">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>PRIVATE</span>
+        </button>
+        <button class="mode-btn" id="btn-cloud" onclick="setMode('cloud')">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+          <span>CLOUD</span>
+        </button>
+      </div>
+      <div id="mode-status-pill" class="status-pill private">
+        <span class="status-dot"></span>
+        <span id="mode-status-text">PRIVATE MODE</span>
+      </div>
+      <!-- Model selector -->
+      <div class="model-selector-wrap">
+        <select class="model-selector" id="model-selector" onchange="onModelChange(this.value)">
+          <option value="">Loading models…</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content pages -->
+  <main class="main-content">
+    <!-- CHAT PAGE -->
+    <div id="page-chat" class="page">
+      <div class="chat-container">
+        <div id="chat-messages" class="chat-messages">
+          <div class="message assistant">
+            <div class="message-avatar">BKG</div>
+            <div class="message-bubble">
+              <span class="font-orb text-teal" style="font-size:0.7rem">ATLANTEAN SYSTEM ONLINE</span><br>
+              I am BKG — your deterministic execution agent. Currently running in
+              <strong id="inline-mode-label" class="text-violet">PRIVATE</strong> mode.
+              Select a model above and start chatting. Type <code>/help</code> for slash commands.
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" class="chat-input" rows="1" placeholder="Send a message… (/help for commands)" onkeydown="chatKeydown(event)" oninput="autoResize(this)"></textarea>
+          <button class="btn-send" onclick="sendMessage()" title="Send">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROVIDERS PAGE -->
+    <div id="page-providers" class="page hidden">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          All Providers
+        </div>
+        <div id="providers-grid" class="grid-3">Loading…</div>
+      </div>
+    </div>
+
+    <!-- MY KEYS PAGE -->
+    <div id="page-my-keys" class="page hidden">
+      <div class="card">
+        <div class="card-title">My Provider Keys</div>
+        <p class="text-muted mb-16" style="font-size:0.82rem">Your keys are stored server-side, encrypted by your BKG API key. They override admin global keys.</p>
+        <div id="my-keys-list">Loading…</div>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="saveMyKeys()">Save Keys</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="page-dashboard" class="page hidden">
+      <div class="grid-stats" style="margin-bottom:20px" id="stats-row">Loading stats…</div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Provider Status</div>
+          <table class="data-table" id="provider-status-table"><thead><tr><th>Provider</th><th>Tier</th><th>Models</th><th>Status</th></tr></thead><tbody id="provider-status-body">Loading…</tbody></table>
+        </div>
+        <div class="card">
+          <div class="card-title">Telemetry</div>
+          <table class="data-table"><thead><tr><th>Model</th><th>Calls</th><th>Success</th><th>Avg Latency</th></tr></thead><tbody id="telemetry-body">No data yet.</tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PAGE -->
+    <div id="page-admin" class="page hidden">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Global Provider Keys (Admin)</div>
+          <p class="text-muted mb-16" style="font-size:0.82rem">These keys are used as fallback for all users. Masked after saving.</p>
+          <div id="admin-providers-list">Loading…</div>
+          <div class="form-group" style="margin-top:16px">
+            <label class="form-label">Global Default Model</label>
+            <select class="model-selector" id="admin-default-model" style="width:100%"></select>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <label class="toggle-switch"><input type="checkbox" id="global-free-only" checked><span class="toggle-track"></span></label>
+              <span class="text-dim" style="font-size:0.8rem">Free-only mode globally</span>
+            </div>
+            <button class="btn btn-primary" onclick="saveAdminGlobals()">Save</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">System Info</div>
+          <div id="admin-system-info">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ══ State ════════════════════════════════════════════════════════════════════
+let currentMode = localStorage.getItem('bkg-mode') || 'private';
+let currentModel = localStorage.getItem('bkg-model') || '';
+let myBkgKey = localStorage.getItem('bkg-api-key') || '';
+let allProviders = [];
+let chatHistory = [];
+
+// ══ Init ═════════════════════════════════════════════════════════════════════
+async function init() {
+  applyMode(currentMode, false);
+  if (!myBkgKey) {
+    await registerUser();
+    showOnboarding();
+  }
+  await loadProviders();
+  await loadModels();
+  navigateTo('chat');
+}
+
+async function registerUser() {
+  try {
+    const r = await apiFetch('/api-keys/self-register', 'POST', {});
+    if (r.key) {
+      myBkgKey = r.key;
+      localStorage.setItem('bkg-api-key', myBkgKey);
+    }
+  } catch(e) { myBkgKey = 'bkg_' + randomHex(24); localStorage.setItem('bkg-api-key', myBkgKey); }
+}
+
+// ══ Mode ══════════════════════════════════════════════════════════════════════
+function setMode(mode) {
+  applyMode(mode, true);
+  loadModels();
+}
+
+function applyMode(mode, persist) {
+  currentMode = mode;
+  if (persist) { localStorage.setItem('bkg-mode', mode); apiFetch('/api/mode','PUT',{mode}); }
+  document.getElementById('btn-private').className = 'mode-btn' + (mode==='private' ? ' active-private' : '');
+  document.getElementById('btn-cloud').className = 'mode-btn' + (mode==='cloud' ? ' active-cloud' : '');
+  const pill = document.getElementById('mode-status-pill');
+  pill.className = 'status-pill ' + mode;
+  document.getElementById('mode-status-text').textContent = mode.toUpperCase() + ' MODE';
+  document.getElementById('inline-mode-label').textContent = mode.toUpperCase();
+  document.getElementById('inline-mode-label').className = mode==='private' ? 'text-violet' : 'text-teal';
+}
+
+// ══ Models ════════════════════════════════════════════════════════════════════
+async function loadModels() {
+  const sel = document.getElementById('model-selector');
+  sel.innerHTML = '<option value="">Loading…</option>';
+  try {
+    const data = await apiFetch('/api/models?mode=' + currentMode);
+    const models = data.models || [];
+    sel.innerHTML = models.length === 0
+      ? '<option value="">No models — add a provider key</option>'
+      : models.map(m => `<option value="${m.id}" ${m.id===currentModel?'selected':''}>${m.name} [${m.provider_id}]</option>`).join('');
+
+    // Also populate admin default
+    const adm = document.getElementById('admin-default-model');
+    if (adm) adm.innerHTML = sel.innerHTML;
+
+    if (!currentModel && models.length > 0) { currentModel = models[0].id; localStorage.setItem('bkg-model', currentModel); }
+  } catch(e) { sel.innerHTML = '<option value="">Error loading models</option>'; }
+}
+
+function onModelChange(val) { currentModel = val; localStorage.setItem('bkg-model', val); }
+
+// ══ Providers ═════════════════════════════════════════════════════════════════
+async function loadProviders() {
+  try {
+    const data = await apiFetch('/providers/list');
+    allProviders = data.providers || [];
+    renderProviderGrid();
+    renderProviderTable();
+    renderMyKeysList();
+    renderAdminProvidersList();
+  } catch(e) {}
+}
+
+function tierClass(tier) {
+  return {'free':'free-tier','freemium':'freemium','paid':'paid','private':'private-only'}[tier] || '';
+}
+
+function renderProviderGrid() {
+  const el = document.getElementById('providers-grid');
+  if (!el) return;
+  el.innerHTML = allProviders.map(p => `
+    <div class="provider-card ${tierClass(p.tier)}" onclick="navigateTo('providers')">
+      <div class="flex items-center justify-between">
+        <div class="provider-name">${p.display_name}</div>
+        <span class="tier-badge ${p.tier||'freemium'}">${p.tier||'freemium'}</span>
+      </div>
+      <div class="provider-meta">
+        ${p.model_count_free > 0 ? `<span class="text-teal">${p.model_count_free} free</span>` : ''}
+        ${p.model_count_all > 0 ? ` / ${p.model_count_all} total` : ''}
+        ${p.configured ? ' · <span style="color:#00d2b4">✓ key set</span>' : ''}
+      </div>
+      ${p.signup_url ? `<a href="${p.signup_url}" target="_blank" style="font-size:0.68rem;color:var(--text-muted);display:block;margin-top:4px">Get key ↗</a>` : ''}
+    </div>`).join('');
+}
+
+function renderProviderTable() {
+  const body = document.getElementById('provider-status-body');
+  if (!body) return;
+  body.innerHTML = allProviders.map(p => `<tr>
+    <td><span class="font-orb" style="font-size:0.72rem">${p.id}</span></td>
+    <td><span class="tier-badge ${p.tier||'freemium'}">${p.tier||'freemium'}</span></td>
+    <td>${p.model_count_all}</td>
+    <td>${p.configured ? '<span class="text-teal">✓ Active</span>' : '<span class="text-muted">–</span>'}</td>
+  </tr>`).join('');
+}
+
+function renderMyKeysList() {
+  const el = document.getElementById('my-keys-list');
+  if (!el) return;
+  el.innerHTML = ['free','freemium','paid'].map(tier => {
+    const ps = allProviders.filter(p => (p.tier||'freemium') === tier);
+    if (!ps.length) return '';
+    return `<div class="mb-16">
+      <div class="form-label mb-8">${tier.toUpperCase()} PROVIDERS</div>
+      ${ps.map(p => `<div class="form-group">
+        <label class="form-label">${p.display_name}
+          ${p.signup_url ? `<a href="${p.signup_url}" target="_blank" class="text-teal" style="font-weight:400;margin-left:6px;font-size:0.68rem">Get key ↗</a>` : ''}
+        </label>
+        <input class="input-field" type="password" id="key-${p.id}" placeholder="Paste API key…" value="${p.configured?'••••••••••':''}">
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderAdminProvidersList() {
+  const el = document.getElementById('admin-providers-list');
+  if (!el) return;
+  el.innerHTML = allProviders.filter(p => p.tier !== 'private').map(p => `
+    <div class="form-group">
+      <label class="form-label">${p.display_name} <span class="text-muted">(${p.tier})</span></label>
+      <input class="input-field" type="password" id="admin-key-${p.id}" placeholder="Global fallback key…">
+    </div>`).join('');
+}
+
+async function saveMyKeys() {
+  const keys = {};
+  allProviders.forEach(p => {
+    const el = document.getElementById('key-' + p.id);
+    if (el && el.value && !el.value.startsWith('•')) keys[p.id] = el.value;
+  });
+  try {
+    await apiFetch('/user/providers', 'PUT', {keys}, myBkgKey);
+    showToast('Keys saved', 'teal');
+    loadProviders();
+    loadModels();
+  } catch(e) { showToast('Error saving keys','red'); }
+}
+
+async function saveAdminGlobals() {
+  const keys = {};
+  allProviders.filter(p=>p.tier!=='private').forEach(p => {
+    const el = document.getElementById('admin-key-' + p.id);
+    if (el && el.value && !el.value.startsWith('•')) keys[p.id] = el.value;
+  });
+  const defaultModel = document.getElementById('admin-default-model')?.value;
+  const freeOnly = document.getElementById('global-free-only')?.checked;
+  try {
+    await apiFetch('/admin/globals', 'PUT', {keys, defaultModel, freeOnly});
+    showToast('Admin globals saved','teal');
+  } catch(e) { showToast('Error saving admin globals','red'); }
+}
+
+// ══ Dashboard stats ════════════════════════════════════════════════════════════
+async function loadDashboardStats() {
+  try {
+    const d = await apiFetch('/api/stats');
+    const el = document.getElementById('stats-row');
+    if (!el) return;
+    el.innerHTML = [
+      {label:'Providers',value:d.provider_count||allProviders.length},
+      {label:'Models',value:d.model_count||'—'},
+      {label:'API Calls',value:d.total_calls||0},
+      {label:'Cost USD',value:'$'+(d.total_cost||'0.00')},
+    ].map(s=>`<div class="stat"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+    // telemetry
+    const tel = await apiFetch('/api/telemetry');
+    const tbody = document.getElementById('telemetry-body');
+    if (tbody) tbody.innerHTML = (tel.models||[]).map(m=>`<tr><td>${m.model}</td><td>${m.calls}</td><td>${m.success_rate}</td><td>${m.avg_latency_ms}ms</td></tr>`).join('') || '<tr><td colspan="4" class="text-muted">No data yet.</td></tr>';
+  } catch(e) {}
+}
+
+// ══ Chat ══════════════════════════════════════════════════════════════════════
+async function sendMessage() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = ''; autoResize(inp);
+
+  // Slash commands
+  if (text.startsWith('/')) { handleSlash(text); return; }
+
+  appendMessage('user', text);
+  chatHistory.push({role:'user',content:text});
+
+  const thinking = appendMessage('assistant', '<span class="spinner"></span>', true);
+  try {
+    let reply = '';
+    if (currentMode === 'private') {
+      reply = await sendPrivate(text);
+    } else {
+      reply = await sendCloud(text);
+    }
+    thinking.querySelector('.message-bubble').innerHTML = escHtml(reply).replace(/\n/g,'<br>');
+    chatHistory.push({role:'assistant',content:reply});
+  } catch(e) {
+    thinking.querySelector('.message-bubble').innerHTML = `<span style="color:var(--red)">Error: ${escHtml(e.message)}</span>`;
+  }
+}
+
+async function sendCloud(text) {
+  if (!currentModel) throw new Error('No model selected. Add a provider key.');
+  const r = await apiFetch('/providers/proxy', 'POST', {
+    model: currentModel, messages: chatHistory, userKey: myBkgKey
+  });
+  return r.reply || r.content || JSON.stringify(r);
+}
+
+async function sendPrivate(text) {
+  if (!currentModel) throw new Error('No private model selected.');
+  // WebLLM: if model is webllm:* run in browser
+  if (currentModel.startsWith('webllm:')) {
+    return await sendWebLLM(text);
+  }
+  // Ollama: route through tunnel
+  const r = await apiFetch('/tunnel/ollama/api/chat', 'POST', {
+    model: currentModel.replace('ollama:',''),
+    messages: chatHistory,
+    stream: false
+  });
+  return r?.message?.content || JSON.stringify(r);
+}
+
+// ── WebLLM (browser-side) ────────────────────────────────────────────────────
+let webllmEngine = null;
+async function sendWebLLM(text) {
+  if (!window.webllm) {
+    // Load WebLLM from CDN on demand
+    await loadScript('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@latest/lib/bundle.js');
+  }
+  const modelId = currentModel.replace('webllm:','');
+  if (!webllmEngine) {
+    webllmEngine = new window.webllm.CreateMLCEngine(modelId, {
+      initProgressCallback: p => console.log('[WebLLM]', p)
+    });
+    await webllmEngine;
+    webllmEngine = await webllmEngine;
+  }
+  const resp = await webllmEngine.chat.completions.create({messages:[{role:'user',content:text}],stream:false});
+  return resp.choices[0].message.content;
+}
+
+function loadScript(src) {
+  return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+}
+
+// ── Slash commands ────────────────────────────────────────────────────────────
+function handleSlash(cmd) {
+  const parts = cmd.split(' ');
+  const replies = {
+    '/help': `Available slash commands:
+  /help — this list
+  /status — system status
+  /mode private|cloud — switch mode
+  /model — list available models
+  /clear — clear chat history
+  /providers — list providers`,
+    '/status': `Mode: ${currentMode.toUpperCase()} | Model: ${currentModel||'none'} | Key: ${myBkgKey.slice(0,12)}…`,
+    '/clear': 'clear',
+    '/providers': () => { navigateTo('providers'); return '→ Navigated to Providers'; },
+  };
+  if (parts[0]==='/mode' && parts[1]) { setMode(parts[1]); appendMessage('assistant',`Switched to ${parts[1].toUpperCase()} mode.`); return; }
+  if (parts[0]==='/model') { loadModels(); appendMessage('assistant','Refreshing model list…'); return; }
+  const r = replies[parts[0]];
+  if (!r) { appendMessage('assistant',`Unknown command: ${cmd}\nType /help for available commands.`); return; }
+  if (r === 'clear') { document.getElementById('chat-messages').innerHTML=''; chatHistory=[]; return; }
+  const result = typeof r === 'function' ? r() : r;
+  if (result) appendMessage('assistant', result);
+}
+
+// ── Chat helpers ─────────────────────────────────────────────────────────────
+function appendMessage(role, content, isTemp=false) {
+  const el = document.createElement('div');
+  el.className = 'message ' + role;
+  el.innerHTML = `<div class="message-avatar">${role==='user'?'YOU':'BKG'}</div><div class="message-bubble">${role==='user'?escHtml(content):content}</div>`;
+  document.getElementById('chat-messages').appendChild(el);
+  el.scrollIntoView({block:'end'});
+  return el;
+}
+function chatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+// ══ Navigation ════════════════════════════════════════════════════════════════
+function navigateTo(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) pageEl.classList.remove('hidden');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  if (page==='dashboard') loadDashboardStats();
+  if (page==='providers') { renderProviderGrid(); }
+}
+
+// ══ Onboarding ════════════════════════════════════════════════════════════════
+let onboardingStep = 0;
+function showOnboarding() {
+  document.getElementById('onboarding-key').textContent = myBkgKey;
+  renderOnboardingProviders();
+  document.getElementById('onboarding-overlay').classList.remove('hidden');
+}
+function closeOnboarding() {
+  document.getElementById('onboarding-overlay').classList.add('hidden');
+  apiFetch('/user/onboarded','POST',{},{key:myBkgKey});
+}
+function onboardingNext() {
+  document.getElementById('onboarding-step-'+onboardingStep).classList.add('hidden');
+  document.getElementById('dot-'+onboardingStep).classList.remove('active');
+  document.getElementById('dot-'+onboardingStep).classList.add('done');
+  onboardingStep++;
+  if (onboardingStep > 2) { closeOnboarding(); return; }
+  document.getElementById('onboarding-step-'+onboardingStep).classList.remove('hidden');
+  document.getElementById('dot-'+onboardingStep).classList.add('active');
+}
+function renderOnboardingProviders() {
+  const el = document.getElementById('onboarding-providers-list');
+  if (!el) return;
+  const free = allProviders.filter(p=>p.tier==='free'||p.tier==='freemium');
+  el.innerHTML = free.map(p=>`
+    <div class="form-group">
+      <label class="form-label">${p.display_name} <span class="tier-badge ${p.tier}">${p.tier}</span>
+        ${p.signup_url?`<a href="${p.signup_url}" target="_blank" class="text-teal" style="font-size:0.68rem;margin-left:4px">Sign up ↗</a>`:''}
+      </label>
+      <input class="input-field" type="password" id="ob-key-${p.id}" placeholder="Optional API key…">
+    </div>`).join('');
+}
+
+// ══ API ════════════════════════════════════════════════════════════════════════
+async function apiFetch(url, method='GET', body=null, key=null) {
+  const opts = { method, headers:{'Content-Type':'application/json','X-BKG-Key': key||myBkgKey||''} };
+  if (body && method!=='GET') opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(`API ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+
+// ══ Utilities ════════════════════════════════════════════════════════════════
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function randomHex(n){let s='';for(let i=0;i<n;i++)s+='0123456789abcdef'[Math.floor(Math.random()*16)];return s;}
+function showToast(msg, color='teal') {
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:24px;right:24px;padding:10px 18px;border-radius:8px;font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:0.1em;font-weight:700;z-index:9999;background:rgba(10,15,30,0.95);border:1px solid var(--${color});color:var(--${color});box-shadow:var(--glow-${color});animation:msgIn 0.2s ease;`;
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+// ══ Start ═════════════════════════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>

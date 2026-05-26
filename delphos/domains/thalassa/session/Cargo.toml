@@ -1,14 +1,18 @@
 [package]
 name="bkg-session"
-description="BKG session management + universal event schema"
+description="BKG session management, universal event schema, SSE streaming. Rebranded from sandbox-agent universal-agent-schema + session management. Single source of truth."
 version.workspace=true
 edition.workspace=true
 license.workspace=true
 [dependencies]
 bkg-core.workspace=true
+bkg-agents={ path = "../../../domains/thalassa/agents" }
 serde.workspace=true
 serde_json.workspace=true
 thiserror.workspace=true
 chrono.workspace=true
 uuid.workspace=true
 tokio.workspace=true
+tokio-stream="0.1"
+async-trait="0.1"
+tracing.workspace=true

@@ -1,315 +1,329 @@
-# BKG — task.md · Full DELPHOS Specification v2
+# BKG — task.md · DELPHOS Specification v3
 
-> **System ethic**: *Single source of truth. One module, one location.*
-> **Vision**: BKG is not a task app. It is a deterministic OS for causal agent orchestration
-> with replayable reality simulation.
-
----
-
-## Ontology
-
-```
-Event Ledger  →  Reducer  →  World Graph  →  Physics  →  Compiler  →  Projection  →  UI
-```
-
-The UI is the visible shadow of event causality.
-Nothing exists outside the event ledger. No UI state. No hidden mutations.
+> **Single source of truth. One module, one location.**
+> **BKG is a deterministic ontology engine. AI agents are inhabitants, not the core.**
 
 ---
 
-## Current Status
-
-**24 crates, 130+ Rust files, 7 git commits** — foundation solid.
-See `TASK.md` for current status, `FEATURES.md` for full feature inventory, `README.md` for setup.
-
----
-
-## Critical Architecture Gaps (from analysis)
-
-The following 12 structural issues must be resolved before application features.
-Without these, the system drifts from "agent framework" toward unrecoverable chaos.
-
-### Gap 1 — RealmStateMachine MISSING ⚠️ CRITICAL
-Currently multiple crates mutate state independently. No single canonical reducer.
-Fix: **`bkg-state`** — `apply(state, event) -> Result<RealmState>` is the ONLY mutator.
-UI reads ONLY Projections. Never the ledger directly.
-Modules: `reducer.rs`, `projection.rs`, `realm_state.rs`, `transition.rs`, `mutation.rs`, `snapshot.rs`, `reconciliation.rs`, `invariants.rs`
-
-### Gap 2 — No canonical Entity model ⚠️ CRITICAL
-Tasks, missions, agents, sessions have no shared ontological base.
-Without ECS: physics, compiler, diff, UI graph, and mesh replication all explode.
-Fix: **`bkg-ecs`** moved to **Batch 1.5** (was Batch 4 — too late).
-ALL DELPHOS entities become ECS entities: Task, Mission, Slice, Agent, Session, Approval, Message, WorkflowStep, Provider, MeshNode, Timeline.
-
-### Gap 3 — No Global Deterministic World Snapshot ⚠️ CRITICAL
-Capsule snapshots exist, but no full `GenesisSnapshot` / `RealitySnapshot` / `TimelineSnapshot`.
-Fix: **`bkg-snapshot`** (`speculum/snapshot`) — fork/export/restore full world state.
-CLI: `bkg snapshot create/fork/export/diff/restore`
-
-### Gap 4 — Kernel too passive ⚠️ HIGH
-RealmRouter + Validator + Genesis exist, but Kernel doesn't enforce causality integrity.
-Fix: **`kernel/arbitrator.rs`** — prevents concurrent causality corruption, invalid realm transitions, duplicate tick chains, cyclic approvals, replay paradoxes.
-Kernel becomes: BIOS + Hypervisor + Causality Judge.
-
-### Gap 5 — Event typing too flat ⚠️ HIGH
-Current `EventType` enum is untyped `serde_json::Value` payload.
-Fix: **`DomainEvent<T>`** in `bkg-event` — compile-time replay validation, typed reducers, typed projections, event ABI, mesh sync verification.
-
-### Gap 6 — No Universal Realm ABI ⚠️ CRITICAL
-Without ABI, every crate speaks slightly different serialization → "alles spricht leicht andere Sprache" → architecture death.
-Fix: **`bkg-abi`** (`cognition/abi`) — standardizes ALL inter-system communication:
-events · packets · capsules · projections · UI bytecode · mesh sync · plugins · providers
-
-### Gap 7 — Projection Cache missing ⚠️ HIGH
-UI cannot read the full ledger every render cycle. Need materialized read models.
-Fix: **`bkg-projection`** (`katoptron/projection`) — materializer, index, invalidation, realtime subscriptions.
-Atlantean, physics, kanban, scheduler all read ONLY from projections.
-
-### Gap 8 — Capsule has no lifecycle state machine ⚠️ HIGH
-Currently capsules are created/versioned but have no formal state transitions.
-Fix: extend **`bkg-capsule`** with `Created → Mounted → Active → Frozen → Forked → Archived → Corrupted → Recovered`.
-Critical for Mesh + Replay + VM correctness.
-
-### Gap 9 — Workflow Engine has no formal ExecutionGraph ⚠️ HIGH
-DAG ≠ WorkflowGraph. Workflow needs: loops, retries, fallback branches, parallel waves, conditional transitions.
-Fix: **`workflow/graph.rs`** in the upcoming `bkg-workflow` implementation.
-
-### Gap 10 — No BKG Query Language ⚠️ MEDIUM (later)
-Without BQL, UI filters, telemetry queries, physics queries, AI context extraction all become SQL/ECS chaos.
-Fix: **BQL** (`bkg-world` includes query layer):
-`SELECT tasks WHERE status = "blocked" AND dependency.depth > 3 ORDER BY entropy DESC`
-
-### Gap 11 — Realm DNA missing ⚠️ HIGH
-Realm isolation is currently "soft" — any realm could theoretically accept any event.
-Fix: **RealmDNA** (`cognition/realm-dna`) — each realm declares: allowed events, allowed mutations, allowed capabilities, allowed lanes, allowed clocks, allowed reducers.
-
-### Gap 12 — No deterministic memory allocation ⚠️ LATER
-For true `same seed + same ledger = same output`, need deterministic: task ordering, allocator behavior, scheduler timing, async polling.
-tokio alone is insufficient for full determinism. Fix: deterministic executor + replay scheduler + tick-driven async. (Long-term research task.)
-
----
-
-## Updated Batch Order
-
-### Batch 0 — Foundation (IMMEDIATE — before any app features)
-```
-bkg-state           cognition/state         RealmStateMachine, reducer, projections
-bkg-abi             cognition/abi           Universal Realm ABI
-bkg-clock           cognition/clock         Vector clocks, causal ordering, no SystemTime::now()
-kernel/arbitrator   extend bkg-kernel       Causality judge, replay paradox prevention
-DomainEvent<T>      extend bkg-event        Typed events for compile-time validation
-workflow/graph      in bkg-workflow impl    ExecutionGraph: loops, waves, conditionals
-```
-
-### Batch 1 — Core Application
-```
-bkg-task            domains/thalassa/task   Task capsules + lifecycle + DAG
-bkg-project         cognition/project       Project registry + settings
-bkg-workflow        cognition/workflow      Plan→Review→Execute + verdicts
-bkg-scheduler       domains/thalassa/scheduler  Deterministic DAG scheduler
-bkg-mission         domains/thalassa/mission    Mission hierarchy + autopilot
-bkg-lanes           domains/styx/lanes      Realm Bus IPC fabric
-```
-
-### Batch 1.5 — ECS Foundation (moved UP from Batch 4)
-```
-bkg-ecs             domains/katoptron/ecs   Entity Component System (world foundation)
-bkg-projection      domains/katoptron/projection  ProjectionCache + materializer
-realm-dna           cognition/realm-dna     RealmDNA per realm
-capsule lifecycle   extend bkg-capsule      Created/Mounted/Active/Frozen/Forked/Archived
-```
-
-### Batch 2 — Security + Features
-```
-bkg-secrets         domains/katoptron/secrets    AES-256-GCM + OS keychain
-bkg-approval        domains/katoptron/approval   Gates + audit trail
-bkg-capabilities    domains/speculum/capabilities Signed execution scopes
-bkg-eval            domains/katoptron/eval       Scorecards + evidence
-bkg-chat            domains/thalassa/chat        Rooms + mailbox + SSE
-bkg-github          domains/thalassa/github      Issue import + PR creation
-bkg-plugins         domains/katoptron/plugins    YAML manifest + loader
-```
-
-### Batch 3 — Infrastructure
-```
-bkg-mesh            domains/arche/mesh       Multi-node replication + leases
-bkg-vm              domains/thalassa/vm      Sandbox VM + syscall layer
-bkg-snapshot        domains/speculum/snapshot World snapshots (fork/export/restore)
-```
-
-### Batch 4 — Advanced Systems
-```
-bkg-physics         domains/katoptron/physics  DAG physics: mass, tension, entropy
-bkg-compiler        domains/katoptron/compiler Ledger → AST → Geometry → Bytecode
-bkg-diff            domains/speculum/diff      Reality diff engine
-bkg-recovery        domains/speculum/recovery  Crash reconstruction
-bkg-operator        domains/anamnesis/operator Operator consciousness
-bkg-world           domains/katoptron/world    ULTIMATE: Causal World Model + BQL
-```
-
-### Batch 5 — UI + CLI
-```
-atlantean: Kanban, Task detail, Missions, Physics, Diff, Chat, Secrets, Approvals, Mesh
-cli:       task/mission/project/workflow/secrets/eval/mesh/snapshot commands
-terminal:  ratatui backend, headless CI backend
-```
-
----
-
-## Full DELPHOS Layout (42 crates target)
+## The Final Vision
 
 ```
-bkg/
-└── delphos/
-    ├── cognition/
-    │   ├── core/         bkg-core         ✅  IDs, Hash256, BkgError
-    │   ├── kernel/       bkg-kernel       ✅+ Genesis, RealmRouter, Arbitrator(📋)
-    │   ├── event/        bkg-event        ✅+ Event, Ledger, DomainEvent<T>(📋)
-    │   ├── contracts/    bkg-contracts    ✅  CausalContract
-    │   ├── protocol/     bkg-acp          ✅  ACP JSON-RPC, AgentBridge
-    │   ├── state/        bkg-state        📋  CRITICAL — RealmStateMachine
-    │   ├── abi/          bkg-abi          📋  CRITICAL — Universal ABI
-    │   ├── clock/        bkg-clock        📋  CRITICAL — Vector clocks
-    │   ├── project/      bkg-project      📋  Project registry
-    │   └── workflow/     bkg-workflow     📋  Plan→Review→Execute
-    │
-    └── domains/
-        ├── thalassa/
-        │   ├── runtime/      bkg-runtime      ✅
-        │   ├── orchestrator/ bkg-orchestrator ✅
-        │   ├── providers/    bkg-providers    ✅  (pi-free)
-        │   ├── agents/       bkg-agents       ✅  (sandbox-agent)
-        │   ├── session/      bkg-session      ✅  (sandbox-agent)
-        │   ├── exec/         bkg-exec         ✅
-        │   ├── task/         bkg-task         📋  Task capsules
-        │   ├── mission/      bkg-mission      📋  Mission hierarchy
-        │   ├── scheduler/    bkg-scheduler    📋  DAG scheduler
-        │   ├── chat/         bkg-chat         📋  Chat rooms
-        │   ├── github/       bkg-github       📋  GitHub integration
-        │   └── vm/           bkg-vm           📋  Sandbox VM
-        ├── arche/
-        │   ├── capsule/  bkg-capsule      ✅+  (lifecycle SM 📋)
-        │   ├── store/    bkg-store        ✅
-        │   └── mesh/     bkg-mesh         📋  Multi-node
-        ├── styx/
-        │   ├── provider/ bkg-swd          ✅
-        │   ├── tools/    bkg-tools        ✅
-        │   └── lanes/    bkg-lanes        📋  Realm Bus
-        ├── katoptron/
-        │   ├── crypto/   bkg-crypto       ✅
-        │   ├── verifier/ bkg-verifier     ✅
-        │   ├── telemetry/ bkg-telemetry   ✅+  (physics 📋)
-        │   ├── approval/ bkg-approval     📋
-        │   ├── secrets/  bkg-secrets      📋
-        │   ├── eval/     bkg-eval         📋
-        │   ├── plugins/  bkg-plugins      📋
-        │   ├── ecs/      bkg-ecs          📋  CRITICAL (Batch 1.5)
-        │   ├── projection/ bkg-projection 📋
-        │   ├── physics/  bkg-physics      📋
-        │   ├── compiler/ bkg-compiler     📋
-        │   └── world/    bkg-world        📋  ULTIMATE
-        ├── anamnesis/
-        │   ├── policy/   bkg-policy       ✅
-        │   ├── memory/   bkg-memory       ✅  (dreams, insights)
-        │   └── operator/ bkg-operator     📋
-        ├── mnemos/
-        │   ├── memory/   bkg-memory       ✅
-        │   └── replay/   bkg-replay       ✅
-        └── speculum/
-            ├── capabilities/ bkg-capabilities 📋
-            ├── snapshot/     bkg-snapshot     📋
-            ├── diff/         bkg-diff         📋
-            └── recovery/     bkg-recovery     📋
-
-    └── reflection/
-        └── ui/
-            └── atlantean/    bkg-atlantean    ✅+  (Kanban, Tasks, Missions 📋)
-    └── threshold/
-        └── cli/              bkg-cli          ✅+  (Fusion commands 📋)
-    └── calibration/
-        └── testing/          bkg-testing      ✅
+Not: "AI agent framework"
+But: "deterministic causal operating substrate with replayable world simulation"
 ```
+
+Everything in DELPHOS is a projection of the same causal world.
+Physics, UI, AI planning, telemetry, mission orchestration — all different views of one truth.
 
 ---
 
 ## Causal Data Flow (target)
 
 ```
-Event Ledger (bkg-event)
-    ↓ apply() — bkg-state (reducer)
-RealmState
+DomainEvent<T>  (typed, signed, causal parent, schema_id)
+    ↓
+bkg-event       (append-only ledger, BLAKE3 hash chain)
+    ↓ apply() — Reducer<E>
+bkg-state       (RealmState — immutable, copy-on-write)
     ↓ RealmDNA validation
-Validated State
-    ↓ entity sync — bkg-ecs
-World Graph (bkg-world)
-    ↓ physics — bkg-physics
-Geometry
-    ↓ compile — bkg-compiler
-Render Bytecode
-    ↓ projection cache — bkg-projection
-Atlantean UI / Terminal (ratatui)
+bkg-kernel      (Arbitrator — causality judge)
+    ↓ entity sync
+bkg-ecs         (deterministic sparse archetype world)
+    ↓
+bkg-world       (RealityGraph — entities + relations + causality)
+    ↓ n-body physics
+bkg-physics     (geometry)
+    ↓ compile via bkg-abi bytecode
+bkg-compiler    (render bytecode)
+    ↓ materializer
+bkg-projection  (indexed, checksummed, rebuildable read models)
+    ↓ BQL queries
+bkg-query       (BQL engine)
+    ↓
+Atlantean UI / Terminal / Headless CI
 ```
 
 ---
 
-## Fusion Features Mapped (258+ features)
+## The Reducer Rule (strongest invariant)
 
-Full mapping in `FEATURES.md`.
+```rust
+pub trait Reducer<E> {
+    fn apply(state: &RealmState, event: E) -> Result<RealmState>;
+}
+```
 
-**Quick summary by status:**
+**No crate may mutate state structs directly.**
+Immutable snapshots. Structural sharing. Copy-on-write. Zero mutable globals.
+Without this: replay correctness depends on "discipline" — that breaks at scale.
 
-| Group | Done | Partial | Planned |
+---
+
+## 22 Architecture Gaps (v1+v2+v3)
+
+### Critical (must fix in Batch 0)
+
+| # | Gap | Fix | Batch |
 |---|---|---|---|
-| Core Foundation | ✅ 4 crates | — | 📋 3 crates |
-| Execution Realm | ✅ 6 crates | — | 📋 5 crates |
-| Persistence | ✅ 2 crates | — | 📋 2 crates |
-| Observation/Projection | ✅ 3 crates | — | 📋 9 crates |
-| Policy/Memory | ✅ 2 crates | — | 📋 1 crate |
-| Replay | ✅ 2 crates | — | — |
-| Verification | — | — | 📋 4 crates |
-| IPC Fabric | — | — | 📋 1 crate |
-| Dashboard | ✅ partial | — | 📋 extend |
-| CLI | ✅ partial | — | 📋 extend |
+| 1 | Multiple state mutators — no canonical reducer | `bkg-state` Reducer<E> | 0 |
+| 2 | No Universal Realm ABI — crates speak different serialization | `bkg-abi` + `AbiEnvelope<T>` | 0 |
+| 3 | No deterministic clocks — `SystemTime::now()` breaks replay | `bkg-clock` vector clocks | 0 |
+| 4 | Events untyped (`serde_json::Value`) — no compile-time replay validation | `DomainEvent<T>` | 0 |
+| 5 | No EventSchemaRegistry — replay migrations impossible | `bkg-schema` | 0 |
+| 6 | Kernel too passive — no causality judge | `kernel/arbitrator.rs` | 0 |
+| 7 | No ABI version negotiation — old nodes unreadable | `AbiVersion + AbiEnvelope<T>` | 0 |
+| 8 | ECS in Batch 4 too late — physics/compiler/world need it | `bkg-ecs` → Batch 1.5 | 1.5 |
+| 9 | No projection cache — UI reads ledger directly (O(n) per frame) | `bkg-projection` | 1.5 |
+| 10 | No canonical entity model — Task/Mission/Agent have no shared base | All become ECS entities | 1.5 |
+
+### High (fix before Batch 3)
+
+| # | Gap | Fix | Batch |
+|---|---|---|---|
+| 11 | Realm isolation "soft" — any realm could accept any event | `RealmDNA` | 1.5 |
+| 12 | Capsule has no lifecycle SM | extend `bkg-capsule` | 1.5 |
+| 13 | Workflow has no ExecutionGraph | `workflow/graph.rs` | 1 |
+| 14 | No deterministic identity fabric — timeline forking uncontrollable | `bkg-identity` | 1.5 |
+| 15 | Projection could become stale source-of-truth | checksumming + invalidation | 1.5 |
+| 16 | No BQL — UI filters/telemetry/AI context extraction = chaos | `bkg-query` | 1 |
+
+### Medium (fix before Batch 5)
+
+| # | Gap | Fix | Batch |
+|---|---|---|---|
+| 17 | No causal GC — event log grows forever ("10 TB replay startup") | `bkg-gc` | 4 |
+| 18 | No schema migration — old snapshots/replays break on changes | `bkg-migration` | 3 |
+| 19 | No world snapshot — can't fork/restore full reality | `bkg-snapshot` | 3 |
+| 20 | No entropy metrics — system health invisible | `bkg-entropy` | 4 |
+| 21 | No deterministic execution simulator — can't test without real agents | `bkg-simulation` | 4 |
+| 22 | Async determinism (tokio not fully replay-safe) | tick-driven executor | research |
 
 ---
 
-## sandbox-agent Features Ported
+## Complete Crate Map (58 target)
 
-| Feature | Status |
+### ✅ DONE (24)
+
+| Crate | Location |
 |---|---|
-| Universal agent support (7 agents) | ✅ `bkg-agents` |
-| Universal event schema | ✅ `bkg-session` |
-| Session lifecycle management | ✅ `bkg-session` |
-| SSE event streaming | ✅ `bkg-session` + `bkg-atlantean` |
-| Permission handling (human-in-loop) | ✅ `bkg-session` |
-| ACP JSON-RPC 2.0 | ✅ `bkg-acp` |
-| Agent Bridge (stdout → UniversalEvent) | ✅ `bkg-acp` |
-| Inspector UI | ✅ `bkg-atlantean` |
-| Offset-based event replay | ✅ `bkg-session` |
-| Process runtime | 📋 `bkg-vm` |
-| File system operations | ✅ `bkg-exec` |
-| Tool execution sandbox | 📋 `bkg-vm` |
+| bkg-core | cognition/core |
+| bkg-crypto | domains/katoptron/crypto |
+| bkg-event | cognition/event |
+| bkg-contracts | cognition/contracts |
+| bkg-kernel | cognition/kernel |
+| bkg-swd | domains/styx/provider |
+| bkg-capsule | domains/arche/capsule |
+| bkg-store | domains/arche/store |
+| bkg-memory | domains/mnemos/memory |
+| bkg-replay | domains/mnemos/replay |
+| bkg-verifier | domains/katoptron/verifier |
+| bkg-policy | domains/anamnesis/policy |
+| bkg-runtime | domains/thalassa/runtime |
+| bkg-orchestrator | domains/thalassa/orchestrator |
+| bkg-exec | domains/thalassa/exec |
+| bkg-tools | domains/styx/tools |
+| bkg-inspector | reflection/inspector |
+| bkg-providers | domains/thalassa/providers |
+| bkg-telemetry | domains/katoptron/telemetry |
+| bkg-agents | domains/thalassa/agents |
+| bkg-session | domains/thalassa/session |
+| bkg-acp | cognition/protocol |
+| bkg-atlantean | reflection/ui/atlantean |
+| bkg-cli | threshold/cli |
 
----
+### 📋 PLANNED (+34)
 
-## pi-free Features Ported
-
-| Feature | Status |
+#### Batch 0 — Architecture Foundation
+| Crate | Location |
 |---|---|
-| 13 providers (all tiers) | ✅ `bkg-providers` |
-| Free-model detection (Route A+B) | ✅ `bkg-providers` |
-| Per-provider toggle (persisted) | ✅ `bkg-providers` |
-| CI score enhancer | ✅ `bkg-providers` |
-| Model call telemetry | ✅ `bkg-telemetry` |
-| Quota monitoring | ✅ `bkg-telemetry` |
-| Provider fallback chain | ✅ everywhere |
-| Admin global keys | ✅ `bkg-atlantean` |
-| User-level provider keys | ✅ `bkg-atlantean` |
-| Onboarding wizard | ✅ `bkg-atlantean` |
-| Model ABI layer | 📋 `providers/abi` |
+| bkg-state | cognition/state |
+| bkg-abi | cognition/abi |
+| bkg-clock | cognition/clock |
+| bkg-schema | cognition/schema |
+
+#### Batch 1 — Core Application
+| Crate | Location |
+|---|---|
+| bkg-project | cognition/project |
+| bkg-workflow | cognition/workflow |
+| bkg-query | cognition/query |
+| bkg-task | domains/thalassa/task |
+| bkg-mission | domains/thalassa/mission |
+| bkg-scheduler | domains/thalassa/scheduler |
+| bkg-lanes | domains/styx/lanes |
+
+#### Batch 1.5 — ECS Foundation
+| Crate | Location |
+|---|---|
+| bkg-ecs | domains/katoptron/ecs |
+| bkg-projection | domains/katoptron/projection |
+| bkg-identity | domains/speculum/identity |
+
+#### Batch 2 — Security + Features
+| Crate | Location |
+|---|---|
+| bkg-secrets | domains/katoptron/secrets |
+| bkg-approval | domains/katoptron/approval |
+| bkg-capabilities | domains/speculum/capabilities |
+| bkg-eval | domains/katoptron/eval |
+| bkg-chat | domains/thalassa/chat |
+| bkg-github | domains/thalassa/github |
+| bkg-plugins | domains/katoptron/plugins |
+
+#### Batch 3 — Infrastructure
+| Crate | Location |
+|---|---|
+| bkg-mesh | domains/arche/mesh |
+| bkg-vm | domains/thalassa/vm |
+| bkg-snapshot | domains/speculum/snapshot |
+| bkg-migration | domains/speculum/migration |
+
+#### Batch 4 — Advanced Systems
+| Crate | Location |
+|---|---|
+| bkg-physics | domains/katoptron/physics |
+| bkg-entropy | domains/katoptron/entropy |
+| bkg-compiler | domains/katoptron/compiler |
+| bkg-render | domains/katoptron/render |
+| bkg-diff | domains/speculum/diff |
+| bkg-recovery | domains/speculum/recovery |
+| bkg-gc | domains/speculum/gc |
+| bkg-lineage | domains/speculum/lineage |
+| bkg-simulation | domains/thalassa/simulation |
+| bkg-world | domains/katoptron/world |
+| bkg-operator | domains/anamnesis/operator |
+
+#### Batch 5 — Consensus + Final
+| Crate | Location |
+|---|---|
+| bkg-consensus | domains/speculum/consensus |
 
 ---
 
-*BKG v0.1.0 · DELPHOS architecture*
-*Target: 42 crates · 258+ Fusion features · 15 new core systems · 12 architecture gaps resolved*
+## Key Design Contracts
+
+### `bkg-state` Reducer contract
+```rust
+// The ONLY allowed state mutation path.
+// No exceptions. No "fast paths". No shortcuts.
+pub trait Reducer<E: EventPayload> {
+    fn apply(state: &RealmState, event: DomainEvent<E>) -> Result<RealmState>;
+    fn schema_id() -> EventSchemaId;
+}
+```
+
+### `bkg-abi` AbiEnvelope contract
+```rust
+// Every cross-system message is wrapped.
+// Enables version negotiation for mesh + plugin compatibility.
+pub struct AbiEnvelope<T> {
+    pub abi_version:  AbiVersion,
+    pub payload_type: Symbol,
+    pub payload_hash: Hash256,
+    pub payload:      T,
+}
+```
+
+### `bkg-clock` SequencedInstant contract
+```rust
+// NO SystemTime::now() anywhere in business logic.
+// wall_nanos is display-only and never used for ordering.
+pub struct SequencedInstant {
+    pub realm_id:       RealmId,
+    pub lamport:        u64,
+    pub wall_nanos:     u64,  // display only — not for ordering
+}
+```
+
+### `bkg-schema` EventSchema contract
+```rust
+pub struct EventSchema {
+    pub id:                  EventSchemaId,
+    pub version:             SchemaVersion,
+    pub producer_realm:      RealmId,
+    pub reducer:             ReducerId,
+    pub projection_targets:  Vec<ProjectionId>,
+    pub causal_requirements: Vec<EventSchemaId>,
+    pub migration_strategy:  MigrationStrategy,
+}
+```
+
+### `RealmDNA` contract
+```rust
+pub struct RealmDNA {
+    pub allowed_events:             Vec<EventSchemaId>,
+    pub allowed_components:         Vec<ComponentTypeId>,
+    pub allowed_capabilities:       Vec<CapabilityId>,
+    pub allowed_lanes:              Vec<LaneClass>,
+    pub allowed_reducers:           Vec<ReducerId>,
+    pub allowed_projection_targets: Vec<ProjectionId>,
+    pub allowed_snapshot_scopes:    Vec<SnapshotScope>,
+    pub allowed_tick_domains:       Vec<TickDomain>,
+    pub allowed_physics_rules:      Vec<PhysicsRuleId>,
+}
+```
+
+### `bkg-projection` Projection contract
+```rust
+// Projections are DISPOSABLE. Never the source of truth.
+// If stale: rebuild from ledger via bkg-state Reducer.
+pub trait Projection: Sized {
+    fn rebuild(ledger: &dyn EventLedger) -> Result<Self>;
+    fn checksum(&self) -> Hash256;
+    fn is_stale(&self, current: Hash256) -> bool;
+}
+```
+
+### `bkg-ecs` World contract
+```rust
+// Deterministic iteration order guaranteed.
+// No random hashing. No HashMap without stable order.
+// Generation IDs prevent use-after-free entity confusion.
+pub trait WorldQuery {
+    fn entities<C: Component>(&self) -> impl Iterator<Item=(Entity, &C)>;
+    // ^ always yields in stable order (insertion order)
+}
+```
+
+---
+
+## Fusion Features Status
+
+Full mapping in `FEATURES.md`. Quick summary:
+
+| Group | Crates needed | Status |
+|---|---|---|
+| Task Lifecycle (9) | bkg-task | 📋 Batch 1 |
+| Workflow (12) | bkg-workflow | 📋 Batch 1 |
+| Git/Worktree (7) | bkg-task (capsules) | 📋 Batch 1 |
+| Agent Management (10) | bkg-agents ✅ | ✅ DONE |
+| Multi-Project (7) | bkg-project | 📋 Batch 1 |
+| AI Models (12) | bkg-providers ✅ | ✅ DONE |
+| Mission (10) | bkg-mission | 📋 Batch 1 |
+| Research/Insights (8) | bkg-memory ✅ + bkg-simulation | 🔨 PARTIAL |
+| Evaluations (6) | bkg-eval | 📋 Batch 2 |
+| Chat (8) | bkg-chat | 📋 Batch 2 |
+| Terminal/DevServer (5) | bkg-vm + bkg-atlantean | 📋 Batch 3 |
+| Automation (7) | bkg-orchestrator ✅ | 🔨 PARTIAL |
+| Approvals (5) | bkg-approval | 📋 Batch 2 |
+| Secrets (7) | bkg-secrets | 📋 Batch 2 |
+| Plugins (8) | bkg-plugins | 📋 Batch 2 |
+| Dashboard UI (11) | bkg-atlantean ✅ + extend | 🔨 PARTIAL |
+| CLI (17) | bkg-cli ✅ + extend | 🔨 PARTIAL |
+| Multi-Node Mesh (10) | bkg-mesh | 📋 Batch 3 |
+| Remote Access (7) | bkg-mesh + bkg-atlantean | 📋 Batch 3 |
+| Docker (5) | bkg-vm | 📋 Batch 3 |
+| GitHub (7) | bkg-github | 📋 Batch 2 |
+| Persistence (7) | bkg-store ✅ + bkg-task | ✅ PARTIAL |
+| Observability (8) | bkg-telemetry ✅ + bkg-entropy | 🔨 PARTIAL |
+| Sandbox (6) | bkg-vm + bkg-capabilities | 📋 Batch 3 |
+| Desktop/Mobile (8) | bkg-atlantean (PWA) | 📋 Batch 5 |
+| Settings (5) | bkg-project | 📋 Batch 1 |
+| Onboarding (5) | bkg-atlantean ✅ | ✅ DONE |
+| Advanced (27) | various | 📋 Batch 4 |
+
+---
+
+*BKG v0.1.0 · DELPHOS v3 · Deterministic Ontology Engine*
+*58 crates · 258+ Fusion features · 22 architecture gaps mapped*
 *Single source of truth. One module, one location.*

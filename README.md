@@ -1,7 +1,6 @@
-# BKG — Deterministic Multi-Realm Execution System
+# BKG — Deterministic Ontology Engine
 
 > **Single source of truth. One module, one location.**
-> *BKG is not a task manager. It is a deterministic OS for causal agent orchestration.*
 
 [![Rust](https://img.shields.io/badge/rust-1.95+-orange)](https://www.rust-lang.org)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -11,240 +10,220 @@
 
 ## What BKG is
 
+BKG is not an agent framework. It is a **deterministic ontology engine**.
+
+The AI agents are *inhabitants* of this world. Not the core of the world itself.
+
 ```
-Event Ledger  →  Reducer  →  World Graph  →  Physics  →  Compiler  →  Projection  →  UI
+Event Ledger
+    ↓ Reducer<E> — only canonical state mutator
+Realm State (immutable, copy-on-write)
+    ↓ ECS World sync
+World Graph (Entities + Relations + Causality)
+    ↓ Physics simulation
+Geometry
+    ↓ Katoptron UI Compiler
+Render Bytecode
+    ↓ Projection Cache (indexed, checksummed, rebuildable)
+Atlantean UI / Terminal
 ```
 
-Every state in BKG emerges from events. No hidden mutations. No side-effects outside the ledger.
-The UI is the visible shadow of event causality — nothing more, nothing less.
+This is not "AI coding tool". This is a **deterministic causal operating substrate** with replayable world simulation for agentic systems.
 
-**BKG unifies:**
-- [pi-free](https://github.com/apmantza/pi-free) — 13 LLM providers, free-model detection, per-provider toggles
-- [sandbox-agent](https://github.com/rivet-dev/sandbox-agent) — multi-agent runtime, universal event schema, ACP protocol
-- [Fusion](https://github.com/fusion-ai/fusion) — deterministic task orchestration, mission hierarchy, workflow gates
-- **DELPHOS** — the causal world model that binds them all
+---
+
+## Not
+
+- LangGraph / AutoGen / CrewAI / Claude Code clone
+- Agent framework with task board
+- Event-driven microservices
+
+## But
+
+- Event-sourced causal operating substrate
+- Deterministic timeline engine
+- Replayable world simulation
+- Causal ontology reducer
+- Projection compilation system
+- Timeline forking + ancestry tracking
+- Execution physics layer
 
 ---
 
 ## The 9 Invariants
 
-These can never be violated. Enforced at compile time where possible.
-
 | # | Invariant | Crate |
 |---|---|---|
-| 1 | No mutation without event | `bkg-event` (append-only) |
-| 2 | No direct realm writes — only via Contracts | `bkg-kernel` RealmRouter |
-| 3 | No state outside the ledger — reconstruct, don't store | `bkg-swd` + `bkg-capsule` |
-| 4 | Replay must be identical — same seed + same ledger = same output | `bkg-replay` + BLAKE3 |
+| 1 | No mutation without event | `bkg-event` |
+| 2 | No direct realm writes — Contracts only | `bkg-kernel` RealmRouter |
+| 3 | State is reconstructed, never stored | `bkg-state` Reducer |
+| 4 | Replay must be identical | `bkg-clock` + BLAKE3 chain |
 | 5 | Drift = failure — detect and halt | `bkg-verifier` + `bkg-diff` |
-| 6 | VM isolation — tool execution is sealed | `bkg-vm` |
-| 7 | Causal ordering — vector clocks per realm | `bkg-clock` |
+| 6 | Tool execution is sealed | `bkg-vm` |
+| 7 | Causal ordering via vector clocks | `bkg-clock` |
 | 8 | One file = one responsibility | workspace convention |
-| 9 | Single source of truth — no type defined in more than one crate | workspace structure |
+| 9 | Single source of truth | one type, one crate |
+
+### The Reducer Rule (strongest invariant)
+
+```rust
+pub trait Reducer<E> {
+    fn apply(state: &RealmState, event: E) -> Result<RealmState>;
+}
+```
+
+**No crate may mutate state structs directly.**
+Immutable snapshots. Structural sharing. Copy-on-write. Zero mutable globals.
 
 ---
 
-## Architecture — DELPHOS
+## Architecture Overview
 
 ```
-bkg/
-└── delphos/
-    ├── cognition/              ← System law and causality
-    │   ├── core/               typed IDs, Hash256, BkgError, ExecutionSeed
-    │   ├── kernel/             Genesis, RealmRouter, ContractValidator, Arbitrator
-    │   ├── event/              Event, EventLedger, DomainEvent<T>
-    │   ├── contracts/          CausalContract — cross-realm only
-    │   ├── protocol/           ACP JSON-RPC 2.0, AgentBridge, InferenceProxy
-    │   ├── state/              RealmStateMachine, reducer, projections, snapshots ★
-    │   ├── abi/                Universal Realm ABI — events, packets, projections ★
-    │   ├── clock/              Realm Clock, vector clocks, causal ordering ★
-    │   ├── project/            Project registry, settings, isolation ★
-    │   └── workflow/           Plan→Review→Execute gates, verdicts, ExecutionGraph ★
-    │
-    └── domains/
-        ├── thalassa/           ← Execution realm
-        │   ├── runtime/        AgentRuntime (Telum sandbox)
-        │   ├── orchestrator/   TaskGraph, EventBus, Scheduler
-        │   ├── providers/      13 LLM providers (pi-free)
-        │   ├── agents/         7 agents, credentials, status (sandbox-agent)
-        │   ├── session/        SessionManager, UniversalEvent, SSE (sandbox-agent)
-        │   ├── exec/           bash, file, grep, glob tools
-        │   ├── task/           Task capsules, lifecycle, DAG dependencies ★
-        │   ├── mission/        Mission→Milestone→Slice→Feature→Task ★
-        │   ├── scheduler/      Deterministic DAG, priority queue, overlap gating ★
-        │   ├── chat/           Chat rooms, mailbox, streaming SSE ★
-        │   ├── github/         Issue import, PR creation, OAuth ★
-        │   └── vm/             Tool execution sandbox VM ★
-        ├── arche/              ← Persistence realm
-        │   ├── capsule/        Capsule + CapsuleManager (lifecycle state machine)
-        │   ├── store/          sled + in-memory backends
-        │   └── mesh/           Multi-node replication, lease management ★
-        ├── styx/               ← Event provider realm
-        │   ├── provider/       SwdEngine — audit protocol
-        │   ├── tools/          ledger_summary, dump_realm
-        │   └── lanes/          Realm Bus / IPC fabric ★
-        ├── katoptron/          ← Observation and projection realm
-        │   ├── crypto/         BLAKE3, Ed25519, key derivation
-        │   ├── verifier/       hash-chain, PermissionEnforcer
-        │   ├── telemetry/      model call tracking, quota monitor
-        │   ├── approval/       Approval gates, immutable audit trail ★
-        │   ├── secrets/        AES-256-GCM secrets, OS keychain ★
-        │   ├── eval/           Task scorecards, evidence ★
-        │   ├── plugins/        Plugin discovery, manifest loader ★
-        │   ├── ecs/            Entity-Component-System — foundational world model ★
-        │   ├── projection/     ProjectionCache, materializer, realtime subscriptions ★
-        │   ├── physics/        DAG physics: mass, tension, entropy ★
-        │   ├── compiler/       Katoptron UI compiler pipeline ★
-        │   └── world/          Causal World Model — the ultimate integration ★
-        ├── anamnesis/          ← Policy and memory realm
-        │   ├── policy/         PolicyEngine + built-in policies
-        │   ├── memory/         MemoryGraph (causal graph, decay, dreams)
-        │   └── operator/       Operator consciousness, intent tracking ★
-        ├── mnemos/             ← Replay and reconstruction realm
-        │   ├── memory/         MemoryGraph
-        │   └── replay/         ReplayEngine, DivergenceDetector
-        └── speculum/           ← Audit and verification realm
-            ├── capabilities/   Realm permissions, signed scopes ★
-            ├── snapshot/       Global world snapshots (fork, export, restore) ★
-            ├── diff/           Reality diff engine ★
-            └── recovery/       Crash reconstruction, partial replay repair ★
-
-    └── reflection/
-        └── ui/
-            └── atlantean/      Cyberpunk/Atlantis dashboard (Axum + embedded UI)
-
-    └── threshold/
-        └── cli/                `bkg` binary — all commands
+bkg/ (delphos/)
+├── cognition/          System law and causality
+│   ├── core            IDs, Hash256, BkgError               ✅
+│   ├── kernel          Genesis, RealmRouter, Arbitrator      ✅+
+│   ├── event           Event, Ledger, DomainEvent<T>         ✅+
+│   ├── contracts       CausalContract (cross-realm only)     ✅
+│   ├── protocol        ACP JSON-RPC 2.0 + AgentBridge        ✅
+│   ├── state           RealmStateMachine, Reducer            📋
+│   ├── abi             Universal Realm ABI + versioning      📋
+│   ├── clock           Vector clocks, causal ordering        📋
+│   ├── project         Project registry + settings           📋
+│   ├── workflow        Plan→Review→Execute gates             📋
+│   ├── schema          EventSchemaRegistry                   📋
+│   └── query           BQL engine                           📋
+│
+├── domains/
+│   ├── thalassa/       Execution realm
+│   │   ├── runtime     AgentRuntime (Telum sandbox)          ✅
+│   │   ├── orchestrator TaskGraph, EventBus, Scheduler       ✅
+│   │   ├── providers   13 LLM providers (pi-free)            ✅
+│   │   ├── agents      7 agents + credentials (sandbox-agent) ✅
+│   │   ├── session     SessionManager + UniversalEvent       ✅
+│   │   ├── exec        bash, file, grep, glob                ✅
+│   │   ├── task        Task capsules + lifecycle             📋
+│   │   ├── mission     Mission→Milestone→Slice→Task          📋
+│   │   ├── scheduler   Deterministic DAG scheduler           📋
+│   │   ├── chat        Chat rooms + mailbox                  📋
+│   │   ├── github      Issue import + PR creation            📋
+│   │   ├── simulation  Deterministic execution simulator     📋
+│   │   └── vm          Tool sandbox VM                       📋
+│   ├── arche/          Persistence realm
+│   │   ├── capsule     Capsule + lifecycle SM                ✅+
+│   │   ├── store       sled + in-memory                      ✅
+│   │   └── mesh        Multi-node replication                📋
+│   ├── styx/           Event provider realm
+│   │   ├── provider    SwdEngine                             ✅
+│   │   ├── tools       ledger_summary                        ✅
+│   │   └── lanes       Realm Bus IPC fabric                  📋
+│   ├── katoptron/      Observation + projection realm
+│   │   ├── crypto      BLAKE3, Ed25519                       ✅
+│   │   ├── verifier    hash-chain + PermissionEnforcer       ✅
+│   │   ├── telemetry   model call tracking + entropy         ✅+
+│   │   ├── approval    Approval gates + audit                📋
+│   │   ├── secrets     AES-256-GCM + OS keychain             📋
+│   │   ├── eval        Scorecards + evidence                 📋
+│   │   ├── plugins     Plugin discovery + manifest           📋
+│   │   ├── ecs         Entity-Component-System (foundation)  📋
+│   │   ├── projection  ProjectionCache + materializer        📋
+│   │   ├── physics     DAG physics engine                    📋
+│   │   ├── compiler    Katoptron UI compiler pipeline        📋
+│   │   ├── entropy     Entropy + drift metrics               📋
+│   │   └── world       Causal World Model (the true kernel)  📋
+│   ├── anamnesis/      Policy + memory realm
+│   │   ├── policy      PolicyEngine                          ✅
+│   │   ├── memory      MemoryGraph (causal graph)            ✅
+│   │   └── operator    Operator consciousness                📋
+│   ├── mnemos/         Replay realm
+│   │   ├── memory      MemoryGraph                           ✅
+│   │   └── replay      ReplayEngine + divergence             ✅
+│   └── speculum/       Verification + audit realm
+│       ├── capabilities Realm permissions + scopes           📋
+│       ├── snapshot    World snapshots (fork/restore)         📋
+│       ├── diff        Reality diff engine                    📋
+│       ├── recovery    Crash reconstruction                   📋
+│       ├── gc          Causal garbage collection             📋
+│       ├── identity    Deterministic lineage                 📋
+│       ├── lineage     Timeline ancestry graph               📋
+│       ├── migration   Replay-safe schema migrations         📋
+│       └── consensus   Mesh arbitration                      📋
+│
+├── reflection/
+│   └── ui/atlantean    Cyberpunk/Atlantis dashboard          ✅+
+└── threshold/
+    └── cli             `bkg` binary                          ✅+
 ```
-
-★ = planned / in progress
 
 ---
 
 ## Quick Start
 
 ```bash
-# Install Rust (if not already installed)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Clone
-git clone https://github.com/soniaschuh88-ship-it/bkg.git
-cd bkg
-
-# Build everything
+# Clone + build
+git clone https://github.com/soniaschuh88-ship-it/bkg.git && cd bkg
 cargo build --workspace
 
-# Initialize a project
+# Initialize a BKG project
 cargo run -p bkg-cli -- init
 
-# Start the dashboard (http://localhost:7878)
+# Start the Atlantean dashboard (http://localhost:7878)
 cargo run -p bkg-atlantean
 
-# Run all tests
+# Run all tests + quality checks
 cargo test --workspace
-
-# Check code quality
 cargo clippy --workspace -- -D warnings
-```
-
----
-
-## Dashboard
-
-Start the cyberpunk/Atlantis web dashboard:
-
-```bash
-cargo run -p bkg-atlantean
-# → http://localhost:7878
-```
-
-**Pages:**
-- **Chat** — LLM conversation (Private: WebLLM/Ollama, Cloud: 13 free providers)
-- **Providers** — All 13 providers with tier, toggle, signup links
-- **Agents** — 7 agents (Claude, Codex, OpenCode, Amp, Pi, Cursor, Mock)
-- **Inspector** — Live session browser + SSE event stream
-- **Dashboard** — Stats, telemetry, provider status
-- **Admin** — Global provider keys, default model, free-only toggle
-
----
-
-## CLI Reference
-
-```bash
-# Core
-bkg init                          # Genesis + Styx ledger
-bkg run --input '...'             # SWD-audited execution
-bkg verify                        # Hash-chain verification
-bkg replay                        # Reconstruct state from ledger
-bkg status                        # System state as JSON
-bkg chat [--prompt "..."]         # LLM conversation
-
-# Agents (sandbox-agent)
-bkg agent list
-bkg agent spawn --name X --mode bkg_supervised
-
-# Providers (pi-free)
-bkg providers list
-bkg providers models <id>
-bkg providers toggle <id>
-bkg providers refresh <id|all>
-
-# Sessions (sandbox-agent inspector)
-bkg session list
-bkg session create --agent claude
-bkg session send <id> "..."
 ```
 
 ---
 
 ## Provider Fallback Chain
 
-The same chain is used everywhere — providers, agents, secrets:
-
 ```
-1. User's own key  (BKG user config)
-2. Admin global    (~/.bkg/global-providers.json)
-3. Env variable    (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.)
-4. Anonymous       (Kilo + LLM7 — no key required)
+1. User's own key    (BKG user config per project)
+2. Admin global key  (~/.bkg/global-providers.json)
+3. Env variable      (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.)
+4. Anonymous tier    (Kilo + LLM7 — no key required)
 ```
 
 ---
 
 ## Private vs Cloud Mode
 
-**Private mode** (WebLLM + Ollama):
-- Models run in-browser via WebGPU (zero data leaves the machine)
-- Ollama proxied through `/tunnel/ollama/*` (no CORS issues)
+**Private** — zero data leaves the machine:
+- WebLLM in-browser (WebGPU + CDN-loaded models)
+- Ollama tunnel via `/tunnel/ollama/*`
 
-**Cloud mode** (13 free providers):
-- Anthropic, OpenRouter, SambaNova, LLM7, Kilo, Cline + 7 more
-- Free-only filter enforced by default
-- Per-provider toggle: `bkg providers toggle <id>`
+**Cloud** — 13 free providers:
+- Anthropic, OpenRouter, SambaNova, LLM7, Kilo, Cline, + 7 more
+- Free-only filter enforced by default, per-provider toggle persisted
+
+---
+
+## Integrated Systems
+
+| Source | What was ported | Where |
+|---|---|---|
+| [pi-free](https://github.com/apmantza/pi-free) | 13 LLM providers, free detection, toggles, telemetry | `bkg-providers`, `bkg-telemetry` |
+| [sandbox-agent](https://github.com/rivet-dev/sandbox-agent) | 7 agents, universal events, ACP protocol, Inspector | `bkg-agents`, `bkg-session`, `bkg-acp` |
+| [Fusion](https://github.com/fusion-ai/fusion) | 258+ features (task, mission, workflow, mesh, eval…) | all of `domains/thalassa/*` + more |
 
 ---
 
 ## Contributing
 
-This project follows the DELPHOS architecture principles:
-
 1. **Single source of truth** — every concept lives in exactly one crate
-2. **One module, one location** — no duplication across crates
-3. **Event-first** — all state mutations emit events to the ledger
-4. **Replay-safe** — no `SystemTime::now()` in business logic (use `bkg-clock`)
-5. **No hidden state** — reconstruct from events, never store derived state
+2. **No direct state mutation** — only via `Reducer<E>::apply()`
+3. **No `SystemTime::now()`** — use `bkg-clock` `SequencedInstant`
+4. **Replay-safe** — every operation must produce identical output on replay
+5. **Projection-only UI** — UI reads from `bkg-projection` only, never the ledger
 
 ```bash
-# Before submitting a PR
-cargo test --workspace
-cargo clippy --workspace -- -D warnings
+cargo test --workspace && cargo clippy --workspace -- -D warnings
 ```
 
 ---
 
-## License
-
-MIT — see [LICENSE](LICENSE)
-
----
-
-*BKG v0.1.0 · DELPHOS architecture · Single source of truth. One module, one location.*
+*BKG v0.1.0 · DELPHOS · Deterministic Ontology Engine*
+*Single source of truth. One module, one location.*

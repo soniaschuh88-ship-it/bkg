@@ -39,3 +39,5 @@ mod tests{use super::*;use crate::ast::{UiAst,UiNode,UiNodeKind};
         assert_eq!(bc1.len(),bc2.len());
     }
 }
+
+impl Default for UiCompiler { fn default() -> Self { Self::new() } }

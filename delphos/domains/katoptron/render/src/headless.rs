@@ -16,3 +16,5 @@ impl RenderBackend for HeadlessBackend{
 mod tests{use super::*;use bkg_compiler::bytecode::Bytecode;
     #[test] fn renders(){let mut b=HeadlessBackend::new();let bc=Bytecode::new("t",1);let out=b.render(&bc,80,25).unwrap();assert_eq!(out.data.len(),(80*25*4)as usize);}
 }
+
+impl Default for HeadlessBackend { fn default() -> Self { Self::new() } }

@@ -1,6 +1,6 @@
 [package]
-name="bkg-telemetry"
-description="BKG model call telemetry and quota monitoring."
+name="bkg-clock"
+description="BKG Realm Clock — deterministic vector clocks. No SystemTime::now(). Single source of truth."
 version.workspace=true
 edition.workspace=true
 license.workspace=true
@@ -10,5 +10,4 @@ serde.workspace=true
 serde_json.workspace=true
 thiserror.workspace=true
 chrono.workspace=true
-[dev-dependencies]
-uuid={version="1",features=["v4"]}
+uuid.workspace=true

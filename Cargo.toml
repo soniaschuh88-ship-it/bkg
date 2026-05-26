@@ -2,6 +2,10 @@
 resolver = "2"
 members = [
     "delphos/cognition/core",
+    "delphos/cognition/state",
+    "delphos/cognition/abi",
+    "delphos/cognition/clock",
+    "delphos/cognition/schema",
     "delphos/cognition/kernel",
     "delphos/cognition/event",
     "delphos/cognition/contracts",
@@ -55,6 +59,10 @@ chrono         = { version = "0.4", features = ["serde"] }
 sled           = "0.34"
 async-trait    = "0.1"
 reqwest        = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+bkg-schema = { path = "delphos/cognition/schema" }
+bkg-clock  = { path = "delphos/cognition/clock" }
+bkg-abi    = { path = "delphos/cognition/abi" }
+bkg-state  = { path = "delphos/cognition/state" }
 bkg-core         = { path = "delphos/cognition/core" }
 bkg-crypto       = { path = "delphos/domains/katoptron/crypto" }
 bkg-event        = { path = "delphos/cognition/event" }

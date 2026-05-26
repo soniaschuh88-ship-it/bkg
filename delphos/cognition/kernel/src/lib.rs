@@ -4,6 +4,7 @@ pub mod trace_synthesizer;
 pub mod specification_drift;
 pub mod specification_entropy;
 pub mod algebra_stability;
+pub mod semantic_weight;
 pub mod integration;
 pub mod realm;
 pub mod effect_contract;
@@ -20,3 +21,4 @@ pub use validator::CausalContractValidator;
 
 pub use constraint_algebra::{ConstraintExpr, ConstraintRule, ConstraintTarget, RuleSet, canonical_constraint_rules};
 pub use proof_certificate::{CertificateBuilder, ExecutionTrace, ProofCheckResult, ProofChecker, TransitionCertificate};
+pub use semantic_weight::{SemanticWeightLayer, SemanticWeightReport, RuleSemanticWeight, RuleNecessityProof, NecessityClass, RuleRecommendation};

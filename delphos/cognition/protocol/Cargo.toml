@@ -1,14 +1,20 @@
 [package]
 name="bkg-acp"
-description="BKG ACP protocol adapter"
+description="BKG ACP protocol adapter: JSON-RPC 2.0 proxy, agent process bridge. Rebranded from sandbox-agent acp-http-adapter. Single source of truth."
 version.workspace=true
 edition.workspace=true
 license.workspace=true
 [dependencies]
 bkg-core.workspace=true
+bkg-agents={ path = "../../domains/thalassa/agents" }
+bkg-session={ path = "../../domains/thalassa/session" }
 serde.workspace=true
 serde_json.workspace=true
 thiserror.workspace=true
 chrono.workspace=true
 uuid.workspace=true
 tokio.workspace=true
+tokio-stream="0.1"
+async-trait="0.1"
+tracing.workspace=true
+reqwest.workspace=true

@@ -1,3 +1,10 @@
+## ✅ DONE — Architecture Hardening (this session)
+
+- [x] **EventPipeline** `bkg-kernel/pipeline.rs` — validate→decide→apply→emit, 10 tests
+- [x] **bkg-enforce** `cognition/enforce/` — Sealed trait, InvariantGuard, NoBypass<T>, WorkspaceLints, 15 tests
+- [x] **ProjectionView<T>** `bkg-state/projection_view.rs` — sealed read-only, no direct RealmState access, 6 tests
+- [x] **TypedEvent<P: EventPayload>** `bkg-event/typed_event.rs` — 9 canonical types, compile-time schemas, 8 tests
+
 # TASKS.md — Active Work + Roadmap
 
 > Current sprint + full implementation queue.

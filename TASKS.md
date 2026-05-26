@@ -5,7 +5,7 @@
 
 ---
 
-## IN PROGRESS
+## ✅ DONE (Batches 0–2)
 
 ### Batch 0 — Architecture Foundation
 *Must complete before any application crates. These are the non-negotiable substrate.*
@@ -16,7 +16,7 @@
 - [x] **bkg-schema** `cognition/schema` — `EventSchemaRegistry`, migration strategies, schema versioning
 - [x] **DomainEvent<T>** extend `bkg-event` — typed events, `schema_id`, `causal_parent`
 - [x] **kernel/arbitrator** extend `bkg-kernel` — causality judge, replay paradox prevention
-- [ ] **workflow ExecutionGraph** in `bkg-workflow` impl — loops, retries, parallel waves
+- [x] **workflow ExecutionGraph** in `bkg-workflow` impl — loops, retries, parallel waves
 
 ---
 
@@ -26,29 +26,29 @@
 
 - [x] `bkg-project` `cognition/project` — project registry, settings, 5 model lanes
 - [x] `bkg-workflow` `cognition/workflow` — Plan→Review→Execute, verdicts, wave execution
-- [ ] `bkg-query` `cognition/query` — BQL engine: `SELECT tasks WHERE status = "blocked" ORDER BY entropy`
-- [ ] `bkg-task` `domains/thalassa/task` — task capsules `.bkg/tasks/{id}/`, lifecycle, DAG deps
+- [x] `bkg-query` `cognition/query` — BQL engine: `SELECT tasks WHERE status = "blocked" ORDER BY entropy`
+- [x] `bkg-task` `domains/thalassa/task` — task capsules `.bkg/tasks/{id}/`, lifecycle, DAG deps
 - [x] `bkg-mission` `domains/thalassa/mission` — Mission→Milestone→Slice→Feature→Task, autopilot
 - [x] `bkg-scheduler` `domains/thalassa/scheduler` — deterministic DAG, priority queue, overlap gating
-- [ ] `bkg-lanes` `domains/styx/lanes` — Realm Bus IPC, priority lanes, backpressure
+- [x] `bkg-lanes` `domains/styx/lanes` — Realm Bus IPC, priority lanes, backpressure
 
 ### Batch 1.5 — ECS Foundation
 
-- [ ] `bkg-ecs` `domains/katoptron/ecs` — **deterministic sparse archetype ECS** (stable iteration order, replay-safe allocation, generation IDs)
-- [ ] `bkg-projection` `domains/katoptron/projection` — `ProjectionCache`, materializer, invalidation, realtime subscriptions
-- [ ] `bkg-identity` `domains/speculum/identity` — `DeterministicId::derive(seed, lineage, realm)`
-- [ ] capsule lifecycle SM — extend `bkg-capsule` — Created/Mounted/Active/Frozen/Forked/Archived/Corrupted/Recovered
-- [ ] RealmDNA — `cognition/realm-dna` — allowed events/components/capabilities/lanes/reducers per realm
+- [x] `bkg-ecs` `domains/katoptron/ecs` — **deterministic sparse archetype ECS** (stable iteration order, replay-safe allocation, generation IDs)
+- [x] `bkg-projection` `domains/katoptron/projection` — `ProjectionCache`, materializer, invalidation, realtime subscriptions
+- [x] `bkg-identity` `domains/speculum/identity` — `DeterministicId::derive(seed, lineage, realm)`
+- [x] capsule lifecycle SM — extend `bkg-capsule` — Created/Mounted/Active/Frozen/Forked/Archived/Corrupted/Recovered
+- [x] RealmDNA — `cognition/realm-dna` — allowed events/components/capabilities/lanes/reducers per realm
 
 ### Batch 2 — Security + Features
 
-- [ ] `bkg-secrets` `domains/katoptron/secrets` — AES-256-GCM, OS keychain, scopes, policies
-- [ ] `bkg-approval` `domains/katoptron/approval` — gates, immutable audit trail, action classification
-- [ ] `bkg-capabilities` `domains/speculum/capabilities` — realm-scoped permissions, signed scopes, revocation
-- [ ] `bkg-eval` `domains/katoptron/eval` — scorecards, evidence, scheduled batches
-- [ ] `bkg-chat` `domains/thalassa/chat` — rooms, mailbox, SSE streaming, mention routing
-- [ ] `bkg-github` `domains/thalassa/github` — issue import, PR creation, OAuth, webhooks
-- [ ] `bkg-plugins` `domains/katoptron/plugins` — YAML manifest, UI slots, prompt contributions
+- [x] `bkg-secrets` `domains/katoptron/secrets` — AES-256-GCM, OS keychain, scopes, policies
+- [x] `bkg-approval` `domains/katoptron/approval` — gates, immutable audit trail, action classification
+- [x] `bkg-capabilities` `domains/speculum/capabilities` — realm-scoped permissions, signed scopes, revocation
+- [x] `bkg-eval` `domains/katoptron/eval` — scorecards, evidence, scheduled batches
+- [x] `bkg-chat` `domains/thalassa/chat` — rooms, mailbox, SSE streaming, mention routing
+- [x] `bkg-github` `domains/thalassa/github` — issue import, PR creation, OAuth, webhooks
+- [x] `bkg-plugins` `domains/katoptron/plugins` — YAML manifest, UI slots, prompt contributions
 
 ### Batch 3 — Infrastructure
 

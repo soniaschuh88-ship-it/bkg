@@ -16,3 +16,4 @@ thiserror.workspace = true
 chrono.workspace = true
 bkg-state={ path = "../state" }
 bkg-enforce={ path = "../enforce" }
+uuid.workspace=true

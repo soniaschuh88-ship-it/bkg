@@ -6,7 +6,7 @@ use tokio::sync::{broadcast, RwLock};
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use bkg_agents::{AgentId, AgentMode};
-use crate::{event::{UniversalEvent, UniversalEventData}, message::UniversalMessage, permission::{PermissionStrategy, PermissionResponse}};
+use crate::{event::{UniversalEvent, UniversalEventData}, permission::{PermissionStrategy, PermissionResponse}};
 
 const EVENT_BROADCAST_CAP: usize = 512;
 

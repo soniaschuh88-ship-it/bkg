@@ -2,7 +2,7 @@
 //! Inspector backend: exposes BkgSession via REST + SSE.
 
 use std::sync::Arc;
-use axum::{extract::{Path, Query, State}, Json, response::{Sse, IntoResponse}, http::StatusCode};
+use axum::{extract::{Path, Query, State}, Json, response::{Sse, IntoResponse}};
 use axum::response::sse::Event;
 use tokio::sync::RwLock;
 use tokio_stream::wrappers::BroadcastStream;
@@ -10,7 +10,7 @@ use tokio_stream::StreamExt as _;
 use futures_util::stream;
 use serde::Deserialize;
 use bkg_agents::{AgentId, AgentMode};
-use bkg_session::{SessionConfig, SessionManager, UniversalEventData, BkgSession, SseEvent};
+use bkg_session::{SessionConfig, UniversalEventData, SseEvent};
 use crate::state::AppState;
 
 type S = Arc<RwLock<AppState>>;
@@ -31,11 +31,11 @@ pub async fn create_session(State(s): State<S>, Json(req): Json<CreateSessionReq
         Some(a) => a,
         None => return Json(serde_json::json!({"error": format!("unknown agent: {}", req.agent_id)})),
     };
-    let mode = req.mode.as_deref().and_then(|m| match m {
-        "bypass" => Some(AgentMode::Bypass),
-        "plan_mode" => Some(AgentMode::PlanMode),
-        "bkg_supervised" => Some(AgentMode::BkgSupervised),
-        _ => Some(AgentMode::Default),
+    let mode = req.mode.as_deref().map(|m| match m {
+        "bypass" => AgentMode::Bypass,
+        "plan_mode" => AgentMode::PlanMode,
+        "bkg_supervised" => AgentMode::BkgSupervised,
+        _ => AgentMode::Default,
     }).unwrap_or_default();
 
     let mut cfg = SessionConfig::for_agent(agent_id).with_mode(mode);
@@ -52,7 +52,7 @@ pub async fn create_session(State(s): State<S>, Json(req): Json<CreateSessionReq
 
 /// POST /sessions/:id/send
 #[derive(Deserialize)]
-pub struct SendRequest { pub text: String, #[serde(default)] pub stream: bool }
+pub struct SendRequest { pub text: String }
 
 pub async fn send_message(State(s): State<S>, Path(id): Path<String>, Json(req): Json<SendRequest>) -> Json<serde_json::Value> {
     let s = s.read().await;

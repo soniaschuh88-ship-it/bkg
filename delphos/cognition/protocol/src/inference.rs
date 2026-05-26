@@ -49,7 +49,7 @@ impl InferenceProxy {
         // Fallback chain
         let key = self.user_provider_keys.get(provider)
             .or_else(|| self.admin_provider_keys.get(provider))
-            .map(|k| k.clone());
+            .cloned();
         let base = match provider {
             "anthropic"  => "https://api.anthropic.com".into(),
             "openai"     => "https://api.openai.com".into(),

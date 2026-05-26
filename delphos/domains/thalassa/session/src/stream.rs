@@ -54,7 +54,6 @@ impl EventStream {
     pub async fn next_sse(&mut self) -> Option<SseEvent> {
         match self.receiver.recv().await {
             Ok(ev) => {
-                let is_terminal = ev.is_terminal();
                 let sse = SseEvent::from_universal(&ev);
                 Some(sse)
             }

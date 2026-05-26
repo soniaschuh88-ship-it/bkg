@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use tokio::sync::RwLock;
 use bkg_agents::{AgentId, AgentMode, credentials::{AgentCredentials, CredentialExtractionOptions, resolve_credentials}};
-use bkg_session::{UniversalEvent, UniversalEventData, BkgSession};
+use bkg_session::UniversalEventData;
 
 /// Config for creating an agent bridge.
 #[derive(Debug, Clone)]
@@ -92,7 +92,7 @@ impl AgentBridge {
                     .and_then(|b| b["text"].as_str())
                     .unwrap_or("")
                     .to_string();
-                Some(UniversalEventData::Message(bkg_session::UniversalMessage::text("assistant", text)))
+                Some(UniversalEventData::Message(bkg_session::message::UniversalMessage::text("assistant", text)))
             }
             (AgentId::Claude, "system") if v["subtype"] == "init" => {
                 Some(UniversalEventData::Started { mode: Some(self.config.mode.as_str().into()) })
@@ -103,7 +103,7 @@ impl AgentBridge {
             // Codex events
             (AgentId::Codex, "message") => {
                 let text = v["content"].as_str().unwrap_or("").to_string();
-                Some(UniversalEventData::Message(bkg_session::UniversalMessage::text("assistant", text)))
+                Some(UniversalEventData::Message(bkg_session::message::UniversalMessage::text("assistant", text)))
             }
             (AgentId::Codex, "task_complete") => {
                 Some(UniversalEventData::Finished { reason: Some("task_complete".into()) })
@@ -111,12 +111,12 @@ impl AgentBridge {
             // OpenCode events
             (AgentId::Opencode, "message.part.text") | (AgentId::Opencode, "message") => {
                 let text = v["content"].as_str().or_else(|| v["text"].as_str()).unwrap_or("").to_string();
-                Some(UniversalEventData::Message(bkg_session::UniversalMessage::text("assistant", text)))
+                Some(UniversalEventData::Message(bkg_session::message::UniversalMessage::text("assistant", text)))
             }
             // Mock agent — pass through
             (AgentId::Mock, _) => {
                 let text = v["text"].as_str().or_else(|| v["content"].as_str()).unwrap_or(line).to_string();
-                Some(UniversalEventData::Message(bkg_session::UniversalMessage::text("assistant", text)))
+                Some(UniversalEventData::Message(bkg_session::message::UniversalMessage::text("assistant", text)))
             }
             // Unknown format — preserve raw
             _ => Some(UniversalEventData::Unknown { raw: v }),

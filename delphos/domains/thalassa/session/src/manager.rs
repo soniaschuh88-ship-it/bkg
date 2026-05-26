@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use chrono::{DateTime, Utc};
+
 use bkg_core::{BkgError, BkgResult};
 use crate::session::{BkgSession, SessionConfig, SessionSummary};
 
@@ -41,7 +41,7 @@ impl SessionManager {
     pub async fn list(&self) -> Vec<SessionSummary> {
         let sessions = self.sessions.read().await;
         let mut v: Vec<SessionSummary> = sessions.values().map(|s| s.to_summary()).collect();
-        v.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+        v.sort_by_key(|s| std::cmp::Reverse(s.created_at));
         v
     }
 

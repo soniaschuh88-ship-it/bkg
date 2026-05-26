@@ -46,7 +46,7 @@ getrandom      = { version = "0.2", features = ["std"] }
 thiserror      = "1"
 anyhow         = "1"
 tokio          = { version = "1", features = ["full"] }
-tokio-stream   = "0.1"
+tokio-stream   = { version = "0.1", features = ["sync"] }
 petgraph       = "0.6"
 tracing        = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

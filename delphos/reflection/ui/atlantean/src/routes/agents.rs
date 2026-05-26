@@ -5,8 +5,8 @@ use std::sync::Arc;
 use axum::{extract::{Path, State}, Json};
 use tokio::sync::RwLock;
 use serde::Deserialize;
-use bkg_agents::{AgentId, AgentMode, AgentInfo,
-    credentials::{CredentialExtractionOptions, resolve_all_credentials},
+use bkg_agents::{AgentId, AgentInfo,
+    credentials::CredentialExtractionOptions,
     status::AgentStatusReport};
 use crate::state::AppState;
 
@@ -14,7 +14,7 @@ type S = Arc<RwLock<AppState>>;
 
 /// GET /agents/list → all agents with status + capabilities
 pub async fn list_agents(State(s): State<S>) -> Json<serde_json::Value> {
-    let s = s.read().await;
+    let _s = s.read().await;
     let opts = CredentialExtractionOptions {
         admin_key: None, user_key: None, skip_agent_config: false,
     };

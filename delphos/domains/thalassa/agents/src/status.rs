@@ -4,7 +4,7 @@
 use std::process::Command;
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
-use crate::{agent::{AgentId, AgentInfo}, credentials::{AgentCredentials, CredentialExtractionOptions, resolve_credentials}};
+use crate::{agent::AgentId, credentials::{CredentialExtractionOptions, resolve_credentials}};
 
 /// Live status of one agent.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -63,7 +63,7 @@ impl AgentStatusReport {
 fn probe_binary(name: &str) -> (bool, Option<String>, Option<String>) {
     // Try `which`
     let path = Command::new("which").arg(name).output().ok()
-        .and_then(|o| if o.status.success() { String::from_utf8(o.stdout).ok() } else { None })
+        .filter(|o| o.status.success()).and_then(|o| String::from_utf8(o.stdout).ok())
         .map(|s| s.trim().to_string());
 
     if path.is_none() { return (false, None, None); }

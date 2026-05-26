@@ -1,6 +1,7 @@
 # BKG — task.md
 
 > **System ethic**: *Single source of truth. One module, one location.*
+> Every feature lives in exactly one place. No duplication anywhere in the workspace.
 
 ---
 
@@ -21,112 +22,239 @@
 ```
 bkg/
 └── delphos/
-    ├── threshold/cli/          bkg-cli        — all CLI commands
+    ├── threshold/cli/              ← bkg-cli              : bkg binary, all commands
+    │
     ├── cognition/
-    │   ├── core/               bkg-core       — typed IDs, Hash256, BkgError
-    │   ├── kernel/             bkg-kernel     — Genesis lock, RealmRouter
-    │   ├── event/              bkg-event      — Event, EventLedger (memory+file)
-    │   └── contracts/          bkg-contracts  — CausalContract (cross-realm only)
+    │   ├── core/                   ← bkg-core             : typed IDs, Hash256, BkgError
+    │   ├── kernel/                 ← bkg-kernel           : Genesis, RealmRouter
+    │   ├── event/                  ← bkg-event            : Event, EventLedger (mem+file)
+    │   ├── contracts/              ← bkg-contracts        : CausalContract (cross-realm)
+    │   └── protocol/               ← bkg-acp              : ACP JSON-RPC 2.0 adapter ★
+    │
     └── domains/
         ├── thalassa/
-        │   ├── runtime/        bkg-runtime    — AgentRuntime (Telum sandbox)
-        │   └── orchestrator/   bkg-orchestrator — TaskGraph, EventBus, Scheduler
+        │   ├── runtime/            ← bkg-runtime          : AgentRuntime (Telum sandbox)
+        │   ├── orchestrator/       ← bkg-orchestrator     : TaskGraph, EventBus, Scheduler
+        │   ├── providers/          ← bkg-providers        : 13 LLM providers, pi-free port ★
+        │   ├── agents/             ← bkg-agents           : AgentId, status, credentials ★
+        │   ├── session/            ← bkg-session          : SessionManager, UniversalEvent ★
+        │   └── exec/               ← bkg-exec             : bash, file, grep, glob tools
         ├── arche/
-        │   ├── capsule/        bkg-capsule    — immutable versioned state containers
-        │   └── store/          bkg-store      — sled + in-memory backends
+        │   ├── capsule/            ← bkg-capsule          : immutable versioned containers
+        │   └── store/              ← bkg-store            : sled + in-memory persistence
         ├── styx/
-        │   ├── provider/       bkg-swd        — SwdEngine lifecycle
-        │   └── tools/          bkg-tools      — ledger inspection
+        │   ├── provider/           ← bkg-swd              : SwdEngine lifecycle
+        │   └── tools/              ← bkg-tools            : ledger inspection
         ├── katoptron/
-        │   ├── crypto/         bkg-crypto     — BLAKE3, Ed25519
-        │   └── verifier/       bkg-verifier   — hash-chain, PermissionEnforcer ★
+        │   ├── crypto/             ← bkg-crypto           : BLAKE3, Ed25519
+        │   ├── verifier/           ← bkg-verifier         : hash-chain, PermissionEnforcer ★
+        │   └── telemetry/          ← bkg-telemetry        : model call tracking, quota ★
         ├── anamnesis/
-        │   └── policy/         bkg-policy     — PolicyEngine
+        │   └── policy/             ← bkg-policy           : PolicyEngine
         └── mnemos/
-            ├── memory/         bkg-memory     — weighted causal graph
-            └── replay/         bkg-replay     — ReplayEngine, divergence detection
+            ├── memory/             ← bkg-memory           : causal graph
+            └── replay/             ← bkg-replay           : ReplayEngine, divergence detection
+
+    └── reflection/
+        └── ui/
+            └── atlantean/          ← bkg-atlantean        : cyberpunk/Atlantis web UI ★
 ```
 
 ---
 
-## Crates (18)
+## Crates (24 total)
 
-| Crate | Responsibility |
+| Crate | Responsibility | Source |
+|---|---|---|
+| `bkg-core` | typed IDs, Hash256, BkgError | BKG-native |
+| `bkg-crypto` | BLAKE3, Ed25519, seed derivation | BKG-native |
+| `bkg-event` | Event, hash-chained EventLedger | BKG-native |
+| `bkg-contracts` | CausalContract — cross-realm only | BKG-native |
+| `bkg-kernel` | Genesis lock, RealmRouter | BKG-native |
+| `bkg-swd` | SwdEngine — audit protocol | BKG-native |
+| `bkg-capsule` | Capsule + CapsuleManager | BKG-native |
+| `bkg-store` | InMemoryStore + SledStore | BKG-native |
+| `bkg-memory` | MemoryGraph — impact × recurrence × depth | BKG-native |
+| `bkg-replay` | ReplayEngine, DivergenceDetector | BKG-native |
+| `bkg-verifier` | hash-chain, PermissionEnforcer | BKG-native + new |
+| `bkg-policy` | PolicyEngine + built-in policies | BKG-native |
+| `bkg-runtime` | AgentRuntime (Telum sandbox) | BKG-native |
+| `bkg-orchestrator` | TaskGraph (DAG), EventBus, Scheduler | BKG-native |
+| `bkg-exec` | bash, file, grep, glob tools | BKG-native |
+| `bkg-tools` | ledger_summary, dump_realm | BKG-native |
+| `bkg-inspector` | realm name registry | BKG-native |
+| `bkg-providers` | 13 LLM providers, free detection, toggles | **pi-free port** |
+| `bkg-telemetry` | model call tracking, quota monitor | **pi-free port** |
+| `bkg-agents` | AgentId (7 agents), credentials, status | **sandbox-agent port** |
+| `bkg-session` | SessionManager, UniversalEvent, SSE | **sandbox-agent port** |
+| `bkg-acp` | ACP JSON-RPC 2.0, AgentBridge, InferenceProxy | **sandbox-agent port** |
+| `bkg-atlantean` | cyberpunk/Atlantis web dashboard | **new** |
+| `bkg-cli` | `bkg` binary — all commands | **extended** |
+
+---
+
+## pi-free Integration (bkg-providers + bkg-telemetry)
+
+### 13 Providers
+
+| Provider | Tier | Auth |
+|---|---|---|
+| Ollama | private/free | none (local) |
+| NVIDIA NIM | freemium | `NVIDIA_API_KEY` |
+| OpenRouter | freemium | `OPENROUTER_API_KEY` |
+| SambaNova | free | `SAMBANOVA_API_KEY` |
+| LLM7 | free | none |
+| Kilo | free/OAuth | `KILO_API_KEY` |
+| Cline | free/OAuth | `CLINE_API_KEY` |
+| ZenMux | paid | `ZENMUX_API_KEY` |
+| CrofAI | paid/free-named | `CROFAI_API_KEY` |
+| Codestral | free experiment | `CODESTRAL_API_KEY` |
+| DeepInfra | freemium | `DEEPINFRA_API_KEY` |
+| Together AI | freemium | `TOGETHER_API_KEY` |
+| Novita AI | freemium | `NOVITA_API_KEY` |
+
+### Fallback Chain (same for providers + agents)
+1. User's own key (BKG user config)
+2. Admin global key (`~/.bkg/global-providers.json`)
+3. Environment variable
+4. Anonymous (Kilo + LLM7 — no key needed)
+
+---
+
+## sandbox-agent Integration (bkg-agents + bkg-session + bkg-acp)
+
+### 7 Supported Agents
+
+| BKG ID | Upstream | Modes |
+|---|---|---|
+| `claude` | Anthropic Claude Code | Default, Bypass, **BkgSupervised** |
+| `codex` | OpenAI Codex | Default, PlanMode, **BkgSupervised** |
+| `opencode` | OpenCode | Default, **BkgSupervised** |
+| `amp` | Amp | Default, Bypass |
+| `pi` | Pi | Default, **BkgSupervised** |
+| `cursor` | Cursor | Default |
+| `mock` | BKG Mock | All modes |
+
+**BkgSupervised** is a BKG-native mode that enforces Plan→Review→Execute workflow gates via `bkg-workflow`.
+
+### UniversalEvent Schema
+Every agent's native events are normalized to `UniversalEvent`:
+- `started` | `message` | `delta` | `question_asked` | `permission_asked`
+- `question_answered` | `permission_decided` | `finished` | `error` | `unknown`
+
+All events have: `id` (offset), `timestamp`, `session_id`, `agent`, `data`.
+Replay from any offset is deterministic (BKG invariant: every event is reconstructable).
+
+### ACP Method Registry (`_bkg/` namespace)
+24 methods: `session/*`, `agent/*`, `process/*`, `file/*`, `_bkg/*`
+
+---
+
+## bkg-atlantean Dashboard
+
+### Design: Cyberpunk / Atlantis
+- Deep void palette (#060a14) + teal (#00d2b4) + gold (#ffd76e) + violet (#8b5cf6)
+- Orbitron + Exo 2 fonts, animated particle grid, glowing neon borders
+- Glassmorphism panels, holographic gradients
+- Responsive (collapses sidebar on mobile)
+
+### Private / Cloud Mode Switch
+- **Private**: WebLLM (browser WebGPU, CDN-loaded), Ollama tunnel (`/tunnel/ollama/*`)
+- **Cloud**: 13 free providers, fallback chain, free-only toggle
+
+### Pages
+| Page | Description |
 |---|---|
-| `bkg-core` | `RealmId`, typed IDs, `Hash256`, `ExecutionSeed`, `BkgError` |
-| `bkg-crypto` | BLAKE3 hashing, Ed25519 sign/verify, seed derivation |
-| `bkg-event` | `Event`, hash-chained `EventLedger`, `LaneEvent` types |
-| `bkg-contracts` | `CausalContract` — the only legal cross-realm message |
-| `bkg-kernel` | `Genesis` lock, `RealmRouter`, `CausalContractValidator` |
-| `bkg-swd` | `SwdEngine` — init → capture → commit → verify → archive |
-| `bkg-capsule` | `Capsule` + `CapsuleManager` — immutable history, versioning |
-| `bkg-store` | `InMemoryStore` + `SledStore` — capsule persistence |
-| `bkg-memory` | `MemoryGraph` — importance = impact × recurrence × depth |
-| `bkg-replay` | `ReplayEngine`, `DivergenceDetector`, `BranchReport` |
-| `bkg-verifier` | hash-chain, capsule integrity, drift, **`PermissionEnforcer`** |
-| `bkg-policy` | `PolicyEngine` + built-in event policies |
-| `bkg-runtime` | `AgentRuntime` — Telum sandbox, SWD-recorded task execution |
-| `bkg-orchestrator` | `TaskGraph` (DAG), `EventBus` (async), `Scheduler` |
-| `bkg-tools` | `ledger_summary`, `dump_realm` |
-| `bkg-inspector` | realm name registry |
-| `bkg-cli` | `bkg` binary — all commands |
-| `bkg-testing` | shared test fixtures |
+| Chat | Interactive LLM with /slash commands |
+| Providers | All 13 providers, tier, toggle, signup links |
+| My Keys | Per-user API keys grouped by tier |
+| **Agents** | 7 agents, status, credentials, mode badges ★ |
+| **Inspector** | Session browser + live event viewer (SSE) ★ |
+| Dashboard | Stats, provider status table, telemetry |
+| Admin | Global provider keys, default model, free-only |
+
+### Inspector (ported from sandbox-agent Inspector UI)
+- Session list (left panel): all active sessions
+- Create session: pick agent + mode (default/bypass/plan_mode/bkg_supervised)
+- Event viewer (right panel): live SSE stream + offset-based replay
+  - Color-coded by event type
+  - Event offset + timestamp
+  - Content preview (truncated at 400 chars)
+- Send message input at the bottom
+
+### API Endpoints
+
+```
+# Mode
+GET/PUT  /api/mode
+GET      /api/models?mode=
+GET      /api/stats
+GET      /api/telemetry
+
+# Providers (pi-free)
+GET      /providers/list
+GET      /providers/:id/models
+POST     /providers/proxy              ← fallback chain inference
+
+# Users + Admin
+GET/PUT  /user/providers
+GET      /user/profile
+POST     /user/onboarded
+GET/PUT  /admin/globals
+POST     /admin/globals/providers
+POST     /api-keys/self-register       ← rate-limited (3/hr)
+
+# Agents (sandbox-agent)
+GET      /agents/list
+GET      /agents/:id/status
+POST     /agents/:id/credentials
+
+# Sessions / Inspector (sandbox-agent)
+GET/POST /sessions
+GET      /sessions/:id
+DELETE   /sessions/:id
+POST     /sessions/:id/send
+GET      /sessions/:id/stream          ← SSE with offset replay
+
+# Tunnel
+POST/GET /tunnel/ollama/*              ← reverse-proxy to localhost:11434
+```
 
 ---
 
 ## CLI Commands
 
 ```bash
-# Core commands
-bkg init                              # Genesis + Styx ledger
-bkg run --input '{"action":"echo","data":"hello"}'
-bkg verify                            # Hash-chain verification
-bkg replay                            # Reconstruct ledger state
-bkg status                            # System state as JSON
-bkg isolate                           # Quarantine corrupted branch
+# Core
+bkg init   bkg run   bkg verify   bkg replay   bkg status   bkg isolate
 
-# LLM chat (★ new)
-bkg chat                              # Interactive session (auto-detects provider)
-bkg chat --prompt "..."               # Non-interactive single prompt
-bkg chat --model llama3               # Override model
-bkg chat --permission read-only       # Restrict tool access
-bkg chat --session ./session.jsonl    # Resume saved session
+# Chat (bkg-atlantean)
+bkg chat                      # Interactive LLM (Anthropic/OpenAI/Ollama auto-detect)
+bkg chat --prompt "..."       # Non-interactive
 
-# Agent management (★ new)
+# Agent management
 bkg agent list
-bkg agent spawn --name my-agent --permission workspace-write
-bkg agent show <uuid>
+bkg agent spawn --name X --permission workspace-write
+
+# Providers (pi-free)
+bkg providers list
+bkg providers models <id> [--all]
+bkg providers toggle <id>
+bkg providers refresh <id|all>
+bkg providers telemetry
+bkg providers quota
 ```
 
-### Chat slash commands
+### Chat /slash commands
 
-| Command | Description |
-|---|---|
-| `/help` | List all slash commands |
-| `/status` | BKG system status |
-| `/verify` | Hash-chain verification |
-| `/replay` | Reconstruct ledger state |
-| `/model [name]` | Get or switch LLM model |
-| `/system [text]` | Get or set system prompt |
-| `/clear` | Clear conversation history |
-| `/history` | Print conversation history |
-| `/permission [mode]` | Get or set permission mode |
-| `/export` | Save session to JSONL |
-| `/quit` | Exit |
-
-### Chat provider detection
-
-1. `ANTHROPIC_API_KEY` → Anthropic Claude
-2. `OPENAI_API_KEY` → OpenAI-compatible endpoint
-3. `OLLAMA_HOST` or default → Ollama at `localhost:11434`
+`/help` `/status` `/verify` `/replay` `/model` `/system` `/clear` `/history`
+`/permission [mode]` `/export` `/quit`
 
 ---
 
-## PermissionEnforcer (★ new, `domains/katoptron/verifier/enforcer.rs`)
+## PermissionEnforcer (bkg-verifier)
 
-Single source of truth for all permission logic.
-
-| Mode | bash / write_file | dangerously_allow_any |
+| Mode | bash/write | dangerously_allow_any |
 |---|---|---|
 | `read-only` | ✗ Deny | ✗ Deny |
 | `workspace-write` | ✓ Allow | ⚠ Prompt |
@@ -137,32 +265,26 @@ Single source of truth for all permission logic.
 ## Key Invariants
 
 1. Event-first — all mutations derive from Styx events
-2. Genesis Lock — genesis hash is immutable
+2. Genesis Lock — immutable; deviations create new timelines
 3. Realm Isolation — one entity, one realm
 4. Hash chaining — every event carries predecessor hash
 5. No hidden state — everything is in the ledger
-6. Determinism — same seed + same ledger = same output
-7. SWD is the audit protocol
+6. Determinism — same seed + same history = identical output
+7. SWD is the primary audit protocol
 8. Capsules are isolated versioned containers
+9. Single source of truth — one module, one location
 
 ---
 
-## Verification
+## Test Coverage
 
 ```
-cargo test --workspace      → all pass
-cargo clippy -- -D warnings → clean
+cargo test --workspace   → all pass
+cargo clippy -- -D warnings  → clean across all 24 crates
 ```
-
-- [x] `bkg init` → deterministic genesis
-- [x] `bkg run` → SWD-audited execution
-- [x] `bkg verify` → hash-chain verification
-- [x] `bkg replay` → deterministic reconstruction
-- [x] `bkg status` → JSON system state
-- [x] `bkg chat` → LLM session + slash commands
-- [x] `bkg agent spawn` → Telum sandbox agent
 
 ---
 
 *BKG v0.1.0 — DELPHOS architecture*
 *Single source of truth. One module, one location.*
+*Integrates: pi-free (LLM providers) + sandbox-agent (agent runtime)*

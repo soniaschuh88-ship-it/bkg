@@ -2,6 +2,9 @@
 resolver = "2"
 members = [
     "delphos/cognition/core",
+    "delphos/domains/speculum/identity",
+    "delphos/domains/katoptron/projection",
+    "delphos/domains/katoptron/ecs",
     "delphos/domains/styx/lanes",
     "delphos/domains/thalassa/scheduler",
     "delphos/domains/thalassa/mission",
@@ -77,6 +80,9 @@ bkg-task    = { path = "delphos/domains/thalassa/task" }
 bkg-mission    = { path = "delphos/domains/thalassa/mission" }
 bkg-scheduler    = { path = "delphos/domains/thalassa/scheduler" }
 bkg-lanes    = { path = "delphos/domains/styx/lanes" }
+bkg-ecs    = { path = "delphos/domains/katoptron/ecs" }
+bkg-projection    = { path = "delphos/domains/katoptron/projection" }
+bkg-identity    = { path = "delphos/domains/speculum/identity" }
 bkg-core         = { path = "delphos/cognition/core" }
 bkg-crypto       = { path = "delphos/domains/katoptron/crypto" }
 bkg-event        = { path = "delphos/cognition/event" }
